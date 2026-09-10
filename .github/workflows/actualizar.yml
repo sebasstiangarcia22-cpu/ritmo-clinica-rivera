@@ -1,0 +1,51 @@
+name: Actualizar tablero
+
+on:
+  schedule:
+    # 17:00 UTC = 12:00 en Colombia (UTC-5, sin horario de verano).
+    # 1-6 = lunes a sábado.
+    - cron: '0 17 * * 1-6'
+  workflow_dispatch:        # botón para correrlo a mano desde la pestaña Actions
+
+# Un solo run a la vez: evita que dos commits choquen.
+concurrency:
+  group: actualizar-tablero
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # necesario para hacer commit de data.js
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Traer datos de la hoja
+        id: datos
+        env:
+          RIVERA_ENDPOINT: ${{ secrets.RIVERA_ENDPOINT }}
+        run: |
+          set +e
+          node scripts/actualizar.mjs
+          code=$?
+          set -e
+          if [ $code -eq 78 ]; then
+            echo "cambios=no" >> $GITHUB_OUTPUT
+          elif [ $code -ne 0 ]; then
+            exit $code
+          else
+            echo "cambios=si" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Publicar
+        if: steps.datos.outputs.cambios == 'si'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data.js
+          git commit -m "Datos al $(TZ=America/Bogota date '+%d/%m/%Y %H:%M')"
+          git push
