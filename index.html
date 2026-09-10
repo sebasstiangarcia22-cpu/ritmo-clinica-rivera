@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Ritmo Clínica Rivera</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap">
+<style>
+:root{
+  --ground:#f5f7f6; --surface:#fff; --surface-2:#eef1f0;
+  --ink:#0f1a18; --ink-2:#5a6764; --ink-3:#8b9895;
+  --line:#dde3e1; --line-strong:#c4ccca;
+  --now:#2a78d6; --record:#eb6834; --good:#1baf7a; --bad:#e34948;
+  --faint:#b9c3c0; --meta:#8b9895;
+  --shadow:0 1px 2px rgba(15,26,24,.05),0 8px 24px -12px rgba(15,26,24,.12);
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
+  --serif:'IBM Plex Serif',Georgia,serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#121615; --surface:#1a201e; --surface-2:#232a28;
+  --ink:#eef2f0; --ink-2:#9fadaa; --ink-3:#74827f;
+  --line:#2a322f; --line-strong:#3a4441;
+  --now:#3987e5; --record:#d95926; --good:#199e70; --bad:#e66767;
+  --faint:#4a5451; --meta:#74827f;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.5);
+}}
+:root[data-theme="dark"]{
+  --ground:#121615; --surface:#1a201e; --surface-2:#232a28;
+  --ink:#eef2f0; --ink-2:#9fadaa; --ink-3:#74827f;
+  --line:#2a322f; --line-strong:#3a4441;
+  --now:#3987e5; --record:#d95926; --good:#199e70; --bad:#e66767;
+  --faint:#4a5451; --meta:#74827f;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+html{color-scheme:light dark}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+  line-height:1.5;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums;font-size:14px}
+img{max-width:100%}
+.wrap{max-width:1000px;margin:0 auto;padding:38px 26px 56px}
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-3)}
+h1{font-size:15px;font-weight:600;letter-spacing:-.01em;margin:5px 0 0}
+
+.masthead{display:flex;justify-content:space-between;align-items:baseline;gap:20px;
+  flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--line-strong)}
+.stamp{font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.04em}
+
+.hero{padding:32px 0 4px}
+.verdict{font-family:var(--serif);font-size:clamp(25px,3.7vw,38px);font-weight:600;
+  line-height:1.22;letter-spacing:-.018em;margin:13px 0 0;text-wrap:balance;max-width:20ch}
+.verdict em{font-style:normal;color:var(--now)}
+.heroline{display:flex;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-top:24px}
+.bignum{font-size:clamp(36px,5.6vw,54px);font-weight:600;letter-spacing:-.035em;line-height:1}
+.bigsub{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);letter-spacing:.03em;
+  padding-bottom:6px}
+.rank{display:inline-flex;background:var(--now);color:#fff;border-radius:3px;padding:5px 10px;
+  font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;align-self:center}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:13px;margin-top:28px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:5px;
+  padding:17px 17px 15px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
+.tile-h{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-3);display:flex;justify-content:space-between;gap:8px}
+.delta{font-size:26px;font-weight:600;letter-spacing:-.022em;line-height:1;
+  display:flex;align-items:baseline;gap:6px}
+.delta.up{color:var(--good)} .delta.down{color:var(--bad)}
+.delta .arrow{font-size:15px}
+.tile-f{font-family:var(--mono);font-size:11px;color:var(--ink-2);line-height:1.6;
+  border-top:1px solid var(--line);padding-top:9px;margin-top:auto}
+.tile-f b{color:var(--ink);font-weight:500}
+
+section{margin-top:46px}
+.sec-h{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;
+  flex-wrap:wrap;margin-bottom:4px}
+.sec-t{font-size:18px;font-weight:600;letter-spacing:-.016em;margin:0}
+.sec-d{color:var(--ink-2);font-size:13px;margin:5px 0 0;max-width:58ch}
+
+.seg{display:inline-flex;background:var(--surface-2);border-radius:4px;padding:2px;gap:2px}
+.seg button{font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;
+  font-weight:500;border:0;background:transparent;color:var(--ink-2);padding:6px 12px;
+  border-radius:3px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);
+  box-shadow:0 1px 2px rgba(0,0,0,.09);font-weight:600}
+.seg button:focus-visible{outline:2px solid var(--now);outline-offset:1px}
+
+.chart-card{background:var(--surface);border:1px solid var(--line);border-radius:5px;
+  margin-top:16px;box-shadow:var(--shadow);overflow:hidden}
+.chart-box{position:relative;padding:16px 14px 4px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.legend{display:flex;flex-wrap:wrap;gap:8px 20px;padding:13px 18px 15px;
+  border-top:1px solid var(--line);font-family:var(--mono);font-size:11px;
+  color:var(--ink-2);align-items:center}
+.lg{display:inline-flex;align-items:center;gap:7px}
+.sw{width:15px;height:2.5px;border-radius:2px;flex:none}
+.tip{position:absolute;pointer-events:none;opacity:0;transition:opacity .1s;
+  background:var(--surface);border:1px solid var(--line-strong);border-radius:4px;
+  box-shadow:0 6px 22px -8px rgba(0,0,0,.3);padding:9px 11px;font-family:var(--mono);
+  font-size:11px;min-width:150px;z-index:5;line-height:1.7}
+.tip .th{font-weight:600;color:var(--ink);border-bottom:1px solid var(--line);
+  padding-bottom:5px;margin-bottom:5px;letter-spacing:.05em;text-transform:uppercase;font-size:10px}
+.tip .tr{display:flex;justify-content:space-between;gap:16px;color:var(--ink-2)}
+.tip .tr.on{color:var(--ink);font-weight:600}
+.tip .tk{display:flex;align-items:center;gap:6px}
+.tip .td{width:7px;height:7px;border-radius:50%;flex:none}
+
+.bars{margin-top:18px;display:flex;flex-direction:column}
+.bar{display:grid;grid-template-columns:76px 1fr 124px;align-items:center;gap:13px;
+  padding:7px 0;border-bottom:1px solid var(--line)}
+.bar:last-child{border-bottom:0}
+.bar .bl{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);letter-spacing:.03em}
+.bar.hi .bl,.bar.hi .bv{color:var(--ink);font-weight:600}
+.bar .track{height:18px}
+.bar .fill{height:100%;border-radius:0 3px 3px 0;background:var(--faint);display:block}
+.bar.hi .fill{background:var(--now)}
+.bar.rec .fill{background:var(--record)}
+.bar .bv{font-family:var(--mono);font-size:12px;text-align:right;color:var(--ink-2)}
+
+.notes{margin-top:44px;border-top:1px solid var(--line-strong);padding-top:22px}
+.notes h2{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 14px;font-weight:600}
+.note{display:grid;grid-template-columns:20px 1fr;gap:12px;padding:11px 0;
+  border-bottom:1px solid var(--line);font-size:13.5px;line-height:1.6;color:var(--ink-2)}
+.note:last-child{border-bottom:0}
+.note .k{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ink-3);padding-top:2px}
+.note b{color:var(--ink);font-weight:600}
+footer{margin-top:34px;font-family:var(--mono);font-size:11px;color:var(--ink-3);
+  line-height:1.7;letter-spacing:.02em}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:600px){
+  .wrap{padding:26px 16px 44px}
+  .bar{grid-template-columns:60px 1fr 90px;gap:9px}
+  .bar .bv{font-size:11px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div>
+      <div class="eyebrow">Clínica Dr. Daniel Rivera</div>
+      <h1>Ritmo del mes contra el mismo día de cada mes</h1>
+    </div>
+    <div class="stamp" id="stamp"></div>
+  </div>
+
+  <div class="hero">
+    <p class="verdict" id="verdict"></p>
+    <div class="heroline">
+      <div>
+        <div class="bignum" id="heroNum"></div>
+        <div class="bigsub" id="heroSub"></div>
+      </div>
+      <div class="rank" id="rank"></div>
+    </div>
+    <div class="tiles" id="tiles"></div>
+  </div>
+
+  <section>
+    <div class="sec-h">
+      <div>
+        <h2 class="sec-t">La carrera, día por día</h2>
+        <p class="sec-d">Cada línea es un mes acumulándose desde su día 1. La vertical marca hoy.</p>
+      </div>
+      <div class="seg" role="group" aria-label="Métrica">
+        <button type="button" data-m="ventas" aria-pressed="true">Ventas</button>
+        <button type="button" data-m="leads" aria-pressed="false">Leads</button>
+        <button type="button" data-m="agend" aria-pressed="false">Agendas</button>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-box" id="chartBox">
+        <svg id="chart" viewBox="0 0 900 380" role="img" aria-labelledby="chartTitle">
+          <title id="chartTitle">Ventas acumuladas por día del mes</title>
+        </svg>
+        <div class="tip" id="tip"></div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec-t">Todos los meses, al mismo día</h2>
+    <div class="bars" id="bars"></div>
+  </section>
+
+  <div class="notes">
+    <h2>Lectura</h2>
+    <div id="notes"></div>
+  </div>
+
+  <footer id="foot"></footer>
+</div>
+
+<script src="data.js"></script>
+<script>
+(function(){
+const P = window.RIVERA, DATA = P, HOY = P.corte, META = P.meta;
+const MESES = Object.keys(P.ventas), ACTUAL = MESES[MESES.length-1], ANT = MESES[MESES.length-2];
+const ABBR = {Enero:'ENE',Febrero:'FEB',Marzo:'MAR',Abril:'ABR',Mayo:'MAY',Junio:'JUN',
+  Julio:'JUL',Agosto:'AGO',Septiembre:'SEP',Octubre:'OCT',Noviembre:'NOV',Diciembre:'DIC'};
+const ORD = ['1.º','2.º','3.º','4.º','5.º','6.º','7.º','8.º','9.º','10.º','11.º','12.º'];
+
+const cs = getComputedStyle(document.documentElement), C = k => cs.getPropertyValue(k).trim();
+const nf = new Intl.NumberFormat('es-CO');
+const money = v => '$' + nf.format(Math.round(v));
+const compact = v => v >= 1e6 ? '$' + (v/1e6).toFixed(v/1e6 >= 10 ? 0 : 1).replace('.',',') + ' M'
+                   : v >= 1e3 ? '$' + Math.round(v/1e3) + ' k' : '$' + Math.round(v);
+const pctf = (a,b) => b ? (a-b)/b*100 : 0;
+
+const MET = {
+  ventas:{k:'ventas', fmt:compact,        meta:META, metaLabel:'Meta ' + compact(META)},
+  leads: {k:'leads',  fmt:v=>nf.format(v)},
+  agend: {k:'agend',  fmt:v=>nf.format(v)}
+};
+
+/* ---- estadistica base ---- */
+const alDia = {}; MESES.forEach(m => alDia[m] = DATA.ventas[m][HOY-1]);
+const prev = MESES.slice(0,-1);
+const mejor = prev.reduce((a,b) => alDia[a] > alDia[b] ? a : b);
+const prom = prev.reduce((s,m) => s + alDia[m], 0) / prev.length;
+const puesto = MESES.slice().sort((a,b) => alDia[b]-alDia[a]).indexOf(ACTUAL) + 1;
+const cierre = m => DATA.ventas[m][DATA.ventas[m].length-1];
+
+/* ---- grafico ---- */
+const NS='http://www.w3.org/2000/svg';
+const el=(n,a)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);return e;};
+const svg=document.getElementById('chart'), tip=document.getElementById('tip');
+const W=900,H=380,PL=80,PR=104,PT=22,PB=44, IW=W-PL-PR, IH=H-PT-PB;
+
+function draw(metric){
+  const M=MET[metric], src=DATA[M.k];
+  const months=MESES.filter(m=>src[m]);
+  svg.textContent='';
+  const ttl=el('title',{id:'chartTitle'});
+  ttl.textContent=(metric==='ventas'?'Ventas':metric==='leads'?'Leads':'Agendas')+' acumuladas por día del mes';
+  svg.appendChild(ttl);
+
+  let max=0; months.forEach(m=>src[m].forEach(v=>{if(v>max)max=v;}));
+  if(M.meta) max=Math.max(max,M.meta);
+  max*=1.06;
+  const xOf=d=>PL+(d-1)/30*IW, yOf=v=>PT+IH-(v/max)*IH;
+
+  for(let i=0;i<=5;i++){
+    const v=max/5*i, y=yOf(v);
+    svg.appendChild(el('line',{x1:PL,x2:PL+IW,y1:y,y2:y,stroke:C('--line'),'stroke-width':1}));
+    const t=el('text',{x:PL-12,y:y+4,'text-anchor':'end',fill:C('--ink-3'),
+      'font-family':'IBM Plex Mono, monospace','font-size':11});
+    t.textContent=M.fmt(v); svg.appendChild(t);
+  }
+  [1,5,10,15,20,25,31].forEach(d=>{
+    const t=el('text',{x:xOf(d),y:PT+IH+22,'text-anchor':'middle',fill:C('--ink-3'),
+      'font-family':'IBM Plex Mono, monospace','font-size':11});
+    t.textContent=d; svg.appendChild(t);
+  });
+
+  if(M.meta){
+    const y=yOf(M.meta);
+    svg.appendChild(el('line',{x1:PL,x2:PL+IW,y1:y,y2:y,stroke:C('--meta'),
+      'stroke-width':1.5,'stroke-dasharray':'2 4'}));
+    const t=el('text',{x:PL+IW+8,y:y+4,fill:C('--meta'),
+      'font-family':'IBM Plex Mono, monospace','font-size':10.5});
+    t.textContent=M.metaLabel; svg.appendChild(t);
+  }
+
+  const hx=xOf(HOY);
+  svg.appendChild(el('line',{x1:hx,x2:hx,y1:PT-4,y2:PT+IH,stroke:C('--now'),
+    'stroke-width':1.5,'stroke-dasharray':'3 3',opacity:.55}));
+  const hl=el('text',{x:hx,y:PT-9,'text-anchor':'middle',fill:C('--now'),
+    'font-family':'IBM Plex Mono, monospace','font-size':10,'font-weight':600,'letter-spacing':'.1em'});
+  hl.textContent='HOY · DÍA '+HOY; svg.appendChild(hl);
+
+  const best=months.filter(m=>m!==ACTUAL).reduce((a,b)=>(src[a][HOY-1]||0)>(src[b][HOY-1]||0)?a:b);
+  const style=m=> m===ACTUAL ? {c:C('--now'),w:2.8,z:3,lab:true}
+                : m===best   ? {c:C('--record'),w:2,z:2,lab:true}
+                : m===ANT    ? {c:C('--ink-2'),w:2,z:2,lab:true}
+                             : {c:C('--faint'),w:1.4,z:1,lab:false};
+  const ends=[];
+  months.slice().sort((a,b)=>style(a).z-style(b).z).forEach(m=>{
+    const s=style(m), pts=src[m];
+    const d=pts.map((v,i)=>(i?'L':'M')+xOf(i+1).toFixed(1)+' '+yOf(v).toFixed(1)).join(' ');
+    svg.appendChild(el('path',{d,fill:'none',stroke:s.c,'stroke-width':s.w,
+      'stroke-linejoin':'round','stroke-linecap':'round'}));
+    if(s.lab) ends.push({m,s,x:xOf(pts.length),y:yOf(pts[pts.length-1]),v:pts[pts.length-1]});
+  });
+  const cur=ends.find(e=>e.m===ACTUAL);
+  if(cur) svg.appendChild(el('circle',{cx:cur.x,cy:cur.y,r:6,fill:C('--surface'),
+    stroke:C('--now'),'stroke-width':2.5}));
+
+  ends.sort((a,b)=>a.y-b.y);
+  for(let i=1;i<ends.length;i++) if(ends[i].y-ends[i-1].y<15) ends[i].y=ends[i-1].y+15;
+  ends.forEach(e=>{
+    const t1=el('text',{x:e.x+11,y:e.y-1,fill:e.s.c,'font-family':'IBM Plex Mono, monospace',
+      'font-size':10.5,'font-weight':600,'letter-spacing':'.08em'});
+    t1.textContent=ABBR[e.m];
+    const t2=el('text',{x:e.x+11,y:e.y+12,fill:C('--ink-3'),
+      'font-family':'IBM Plex Mono, monospace','font-size':10.5});
+    t2.textContent=M.fmt(e.v);
+    svg.appendChild(t1); svg.appendChild(t2);
+  });
+
+  const cross=el('line',{x1:0,x2:0,y1:PT,y2:PT+IH,stroke:C('--ink-3'),
+    'stroke-width':1,opacity:0,'pointer-events':'none'});
+  svg.appendChild(cross);
+  const hit=el('rect',{x:PL,y:PT,width:IW,height:IH,fill:'transparent',style:'cursor:crosshair'});
+  svg.appendChild(hit);
+  const box=document.getElementById('chartBox');
+  hit.addEventListener('mousemove',ev=>{
+    const r=svg.getBoundingClientRect();
+    let d=Math.round(((ev.clientX-r.left)/r.width*W-PL)/IW*30)+1;
+    d=Math.max(1,Math.min(31,d));
+    cross.setAttribute('x1',xOf(d)); cross.setAttribute('x2',xOf(d)); cross.setAttribute('opacity',.4);
+    const rows=months.filter(m=>src[m][d-1]!==undefined)
+      .map(m=>({m,v:src[m][d-1],c:style(m).c})).sort((a,b)=>b.v-a.v);
+    tip.innerHTML='<div class="th">Día '+d+'</div>'+rows.map(r=>
+      '<div class="tr'+(r.m===ACTUAL?' on':'')+'"><span class="tk"><span class="td" style="background:'
+      +r.c+'"></span>'+ABBR[r.m]+'</span><span>'+M.fmt(r.v)+'</span></div>').join('');
+    const bw=box.getBoundingClientRect();
+    tip.style.left=Math.min(Math.max(xOf(d)/W*bw.width+16,8),bw.width-176)+'px';
+    tip.style.top='24px'; tip.style.opacity=1;
+  });
+  hit.addEventListener('mouseleave',()=>{tip.style.opacity=0;cross.setAttribute('opacity',0);});
+
+  const lg=[{c:C('--now'),t:ACTUAL+' (en curso)'},{c:C('--record'),t:best+' — mejor al día '+HOY}];
+  if(best!==ANT) lg.push({c:C('--ink-2'),t:ANT+' — mes pasado'});
+  lg.push({c:C('--faint'),t:'Meses anteriores'});
+  document.getElementById('legend').innerHTML=lg.map(l=>
+    '<span class="lg"><span class="sw" style="background:'+l.c+'"></span>'+l.t+'</span>').join('');
+}
+
+/* ---- barras ---- */
+function bars(){
+  const rows=MESES.map(m=>({m,v:alDia[m]})).sort((a,b)=>b.v-a.v), max=rows[0].v;
+  document.getElementById('bars').innerHTML=rows.map(r=>
+    '<div class="bar '+(r.m===ACTUAL?'hi':(r.v===max?'rec':''))+'">'
+    +'<span class="bl">'+r.m+'</span><span class="track"><span class="fill" style="width:'
+    +(r.v/max*100).toFixed(1)+'%"></span></span><span class="bv">'+money(r.v)+'</span></div>').join('');
+}
+
+/* ---- textos ---- */
+function hydrate(){
+  const mio=alDia[ACTUAL];
+  const dAnt=pctf(mio,alDia[ANT]), dMej=pctf(mio,alDia[mejor]), dPro=pctf(mio,prom);
+
+  document.getElementById('stamp').innerHTML='Corte <b>día '+HOY+'</b> · '+ACTUAL.toLowerCase()+' 2026';
+  document.getElementById('verdict').innerHTML = puesto===1
+    ? ACTUAL+' va <em>de primero</em>. Es el mejor arranque del año.'
+    : ACTUAL+' va <em>'+ORD[puesto-1].replace('.º','º')+'</em>. '+
+      (puesto===2 ? 'Solo '+mejor.toLowerCase()+' arrancó mejor.' : (puesto-1)+' meses arrancaron mejor.');
+  document.getElementById('heroNum').textContent=money(mio);
+  document.getElementById('heroSub').textContent='Ventas acumuladas al día '+HOY+' de '+ACTUAL.toLowerCase();
+  document.getElementById('rank').textContent=ORD[puesto-1]+' de '+MESES.length;
+
+  const arrow=d=>'<span class="arrow">'+(d>=0?'▲':'▼')+'</span>'+
+    Math.abs(d).toFixed(1).replace('.',',')+'<span style="font-size:16px">%</span>';
+  const tile=(h1,h2,d,foot)=>'<div class="tile"><div class="tile-h"><span>'+h1+'</span><span>'+h2
+    +'</span></div><div class="delta '+(d>=0?'up':'down')+'">'+arrow(d)+'</div>'
+    +'<div class="tile-f">'+foot+'</div></div>';
+  document.getElementById('tiles').innerHTML=
+    tile('vs. '+ANT.toLowerCase(),'mes pasado',dAnt,ANT+' al día '+HOY+': <b>'+money(alDia[ANT])+'</b>')+
+    tile('vs. '+mejor.toLowerCase(),'mejor arranque',dMej,mejor+' al día '+HOY+': <b>'+money(alDia[mejor])+'</b>')+
+    tile('vs. promedio',prev.length+' meses',dPro,'Promedio al día '+HOY+': <b>'+money(prom)+'</b>');
+
+  /* comentarios: calculados, no escritos a mano */
+  const mejorCierre=prev.reduce((a,b)=>cierre(a)>cierre(b)?a:b);
+  const puestoArr=prev.slice().sort((a,b)=>alDia[b]-alDia[a]).indexOf(mejorCierre)+1;
+  const fr=m=>cierre(m)?alDia[m]/cierre(m)*100:0;
+  const fracs=prev.map(fr).filter(x=>x>0);
+  const fracProm=fracs.reduce((a,b)=>a+b,0)/fracs.length;
+  const proy=mio/fracProm*100;
+  const ag=DATA.agend&&DATA.agend[ACTUAL]?DATA.agend[ACTUAL][HOY-1]:null;
+  const agAnt=DATA.agend&&DATA.agend[ANT]?DATA.agend[ANT][HOY-1]:null;
+
+  const notas=[
+    ['01','El arranque no define el mes. <b>'+mejorCierre+'</b> iba '+ORD[puestoArr-1]
+      +' de '+prev.length+' al día '+HOY+' y cerró como el mejor mes del año ('+compact(cierre(mejorCierre))
+      +', '+(cierre(mejorCierre)/META*100).toFixed(0)+' % de la meta). Al día '+HOY
+      +' llevaba el <b>'+fr(mejorCierre).toFixed(0)+' %</b> de lo que terminó vendiendo.'],
+    ['02','Al día '+HOY+' los meses cerrados llevaban entre <b>'+Math.min.apply(null,fracs).toFixed(0)
+      +' %</b> y <b>'+Math.max.apply(null,fracs).toFixed(0)+' %</b> de su cierre. Manteniendo la forma '
+      +'histórica, '+ACTUAL.toLowerCase()+' cerraría cerca de <b>'+compact(mio/fracProm)+'</b> ('
+      +proy.toFixed(0)+' % de la meta).']
+  ];
+  if(ag!==null&&agAnt!==null) notas.push(['03','Agendas al día '+HOY+': <b>'+ag+'</b> contra <b>'+agAnt
+    +'</b> de '+ANT.toLowerCase()+'. Es el indicador que se mueve antes que la venta.']);
+
+  document.getElementById('notes').innerHTML=notas.map(n=>
+    '<div class="note"><span class="k">'+n[0]+'</span><span>'+n[1]+'</span></div>').join('');
+  document.getElementById('foot').innerHTML='Fuente: Overview 2026 Clínica Dr. Daniel Rivera · '
+    +'Meta mensual '+compact(META)+' · Datos al '+P.actualizado;
+}
+
+document.querySelectorAll('.seg button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.seg button').forEach(x=>x.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true');
+    draw(b.dataset.m);
+  });
+});
+draw('ventas'); bars(); hydrate();
+})();
+</script>
+</body>
+</html>
