@@ -1,0 +1,579 @@
+<title>Ritmo Clínica Rivera</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@400;600&display=swap">
+<style>
+:root{
+  --ground:#f5f7f6; --surface:#ffffff; --surface-2:#eef1f0;
+  --ink:#0f1a18; --ink-2:#5a6764; --ink-3:#8b9895;
+  --line:#dde3e1; --line-strong:#c4ccca;
+  --now:#2a78d6; --record:#eb6834; --good:#1baf7a; --bad:#e34948;
+  --faint:#b9c3c0; --meta:#8b9895;
+  --shadow:0 1px 2px rgba(15,26,24,.05), 0 8px 24px -12px rgba(15,26,24,.12);
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,Segoe UI,sans-serif;
+  --serif:'IBM Plex Serif',Georgia,serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#121615; --surface:#1a201e; --surface-2:#232a28;
+  --ink:#eef2f0; --ink-2:#9fadaa; --ink-3:#74827f;
+  --line:#2a322f; --line-strong:#3a4441;
+  --now:#3987e5; --record:#d95926; --good:#199e70; --bad:#e66767;
+  --faint:#4a5451; --meta:#74827f;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+}}
+:root[data-theme="dark"]{
+  --ground:#121615; --surface:#1a201e; --surface-2:#232a28;
+  --ink:#eef2f0; --ink-2:#9fadaa; --ink-3:#74827f;
+  --line:#2a322f; --line-strong:#3a4441;
+  --now:#3987e5; --record:#d95926; --good:#199e70; --bad:#e66767;
+  --faint:#4a5451; --meta:#74827f;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);line-height:1.5;
+  -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+.wrap{max-width:1080px;margin:0 auto;padding:40px 28px 72px}
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-3)}
+h1{font-family:var(--sans);font-size:15px;font-weight:600;letter-spacing:-.01em;margin:0}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- header ---------- */
+.masthead{display:flex;justify-content:space-between;align-items:baseline;gap:20px;
+  flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--line-strong)}
+.stamp{font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.04em}
+
+/* ---------- hero ---------- */
+.hero{padding:34px 0 30px}
+.verdict{font-family:var(--serif);font-size:clamp(26px,3.9vw,40px);font-weight:600;
+  line-height:1.22;letter-spacing:-.018em;margin:14px 0 0;text-wrap:balance;max-width:20ch}
+.verdict em{font-style:normal;color:var(--now)}
+.heroline{display:flex;align-items:flex-end;gap:26px;flex-wrap:wrap;margin-top:26px}
+.bignum{font-size:clamp(38px,6vw,58px);font-weight:600;letter-spacing:-.035em;line-height:1;
+  font-variant-numeric:tabular-nums}
+.bigsub{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);letter-spacing:.03em;
+  padding-bottom:6px;line-height:1.6}
+.rank{display:inline-flex;align-items:baseline;gap:6px;background:var(--now);color:#fff;
+  border-radius:3px;padding:5px 10px;font-family:var(--mono);font-size:11px;font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;align-self:center}
+
+/* ---------- tiles ---------- */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px;margin-top:30px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:18px 18px 16px;
+  display:flex;flex-direction:column;gap:11px;box-shadow:var(--shadow)}
+.tile-h{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-3);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.delta{font-size:27px;font-weight:600;letter-spacing:-.022em;line-height:1;display:flex;
+  align-items:baseline;gap:7px}
+.delta.up{color:var(--good)} .delta.down{color:var(--bad)}
+.delta .arrow{font-size:16px;line-height:1}
+.tile-f{font-family:var(--mono);font-size:11px;color:var(--ink-2);line-height:1.65;
+  border-top:1px solid var(--line);padding-top:10px;margin-top:auto}
+.tile-f b{color:var(--ink);font-weight:500}
+
+/* ---------- sections ---------- */
+section{margin-top:52px}
+.sec-h{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;
+  flex-wrap:wrap;margin-bottom:6px}
+.sec-t{font-size:19px;font-weight:600;letter-spacing:-.016em;margin:0}
+.sec-d{color:var(--ink-2);font-size:13.5px;margin:6px 0 0;max-width:62ch}
+
+/* ---------- controls ---------- */
+.seg{display:inline-flex;background:var(--surface-2);border-radius:4px;padding:2px;gap:2px}
+.seg button{font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;
+  font-weight:500;border:0;background:transparent;color:var(--ink-2);padding:6px 12px;
+  border-radius:3px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);
+  box-shadow:0 1px 2px rgba(0,0,0,.09);font-weight:600}
+.seg button:focus-visible{outline:2px solid var(--now);outline-offset:1px}
+
+/* ---------- chart ---------- */
+.chart-card{background:var(--surface);border:1px solid var(--line);border-radius:5px;
+  margin-top:18px;box-shadow:var(--shadow);overflow:hidden}
+.chart-box{position:relative;padding:18px 16px 6px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.legend{display:flex;flex-wrap:wrap;gap:8px 20px;padding:14px 20px 16px;
+  border-top:1px solid var(--line);font-family:var(--mono);font-size:11px;color:var(--ink-2);
+  letter-spacing:.02em;align-items:center}
+.lg{display:inline-flex;align-items:center;gap:7px}
+.sw{width:15px;height:2.5px;border-radius:2px;flex:none}
+.tip{position:absolute;pointer-events:none;opacity:0;transition:opacity .1s;
+  background:var(--surface);border:1px solid var(--line-strong);border-radius:4px;
+  box-shadow:0 6px 22px -8px rgba(0,0,0,.3);padding:9px 11px;font-family:var(--mono);
+  font-size:11px;min-width:150px;z-index:5;line-height:1.75}
+.tip .th{font-weight:600;color:var(--ink);border-bottom:1px solid var(--line);
+  padding-bottom:5px;margin-bottom:5px;letter-spacing:.05em;text-transform:uppercase;font-size:10px}
+.tip .tr{display:flex;justify-content:space-between;gap:16px;color:var(--ink-2)}
+.tip .tr.on{color:var(--ink);font-weight:600}
+.tip .tk{display:flex;align-items:center;gap:6px}
+.tip .td{width:7px;height:7px;border-radius:50%;flex:none}
+
+/* ---------- bars ---------- */
+.bars{margin-top:20px;display:flex;flex-direction:column;gap:1px}
+.bar{display:grid;grid-template-columns:78px 1fr 128px;align-items:center;gap:14px;
+  padding:7px 0;border-bottom:1px solid var(--line)}
+.bar:last-child{border-bottom:0}
+.bar .bl{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);letter-spacing:.03em}
+.bar.hi .bl{color:var(--ink);font-weight:600}
+.bar .track{height:19px;position:relative}
+.bar .fill{height:100%;border-radius:0 3px 3px 0;background:var(--faint)}
+.bar.hi .fill{background:var(--now)}
+.bar.rec .fill{background:var(--record)}
+.bar .bv{font-family:var(--mono);font-size:12px;text-align:right;color:var(--ink-2)}
+.bar.hi .bv{color:var(--ink);font-weight:600}
+
+/* ---------- insight ---------- */
+.insight{margin-top:22px;background:var(--surface);border:1px solid var(--line);
+  border-left:3px solid var(--record);border-radius:0 5px 5px 0;padding:20px 22px}
+.insight h3{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--record);margin:0 0 9px;font-weight:600}
+.insight p{margin:0;font-size:14.5px;line-height:1.62;max-width:66ch;color:var(--ink)}
+.insight p+p{margin-top:11px;color:var(--ink-2);font-size:13.5px}
+
+/* ---------- table ---------- */
+.tbl-wrap{overflow-x:auto;margin-top:18px;border:1px solid var(--line);border-radius:5px;
+  background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:600px}
+th,td{padding:10px 15px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:600;background:var(--surface-2);position:sticky;top:0}
+th:first-child,td:first-child{text-align:left}
+td{font-variant-numeric:tabular-nums;color:var(--ink-2)}
+td:first-child{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);letter-spacing:.03em}
+tbody tr:last-child td{border-bottom:0}
+tr.now td{background:color-mix(in srgb,var(--now) 7%,var(--surface));color:var(--ink);font-weight:500}
+tr.now td:first-child{color:var(--now);font-weight:600}
+tr.rec td:first-child{color:var(--record);font-weight:600}
+.pos{color:var(--good)} .neg{color:var(--bad)}
+
+/* ---------- footer ---------- */
+footer{margin-top:60px;padding-top:22px;border-top:1px solid var(--line-strong);
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:26px}
+footer h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 9px;font-weight:600}
+footer p,footer li{font-size:12.5px;color:var(--ink-2);line-height:1.65;margin:0}
+footer ul{margin:0;padding-left:16px}
+footer li+li{margin-top:5px}
+footer b{color:var(--ink);font-weight:500}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:620px){
+  .bar{grid-template-columns:66px 1fr 92px;gap:9px}
+  .bar .bv{font-size:11px}
+  .wrap{padding:28px 18px 56px}
+}
+</style>
+
+<div class="wrap">
+  <div class="masthead">
+    <div>
+      <div class="eyebrow">Clínica Dr. Daniel Rivera · Control diario 2026</div>
+      <h1 style="margin-top:5px">Ritmo del mes contra el mismo día de cada mes</h1>
+    </div>
+    <div class="stamp" id="stamp"></div>
+  </div>
+
+  <div class="hero">
+    <div class="eyebrow">La respuesta corta</div>
+    <p class="verdict" id="verdict"></p>
+    <div class="heroline">
+      <div>
+        <div class="bignum" id="heroNum"></div>
+        <div class="bigsub" id="heroSub"></div>
+      </div>
+      <div class="rank" id="rank"></div>
+    </div>
+
+    <div class="tiles" id="tiles"></div>
+  </div>
+
+  <section>
+    <div class="sec-h">
+      <div>
+        <h2 class="sec-t">La carrera, día por día</h2>
+        <p class="sec-d">Cada línea es un mes acumulándose desde su día 1. La línea vertical marca dónde
+          estamos hoy: todo lo que queda a la derecha es lo que los otros meses hicieron y este mes
+          todavía no.</p>
+      </div>
+      <div class="seg" role="group" aria-label="Métrica del gráfico">
+        <button type="button" data-m="ventas" aria-pressed="true">Ventas</button>
+        <button type="button" data-m="leads" aria-pressed="false">Leads</button>
+        <button type="button" data-m="agend" aria-pressed="false">Agendas</button>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-box" id="chartBox">
+        <svg id="chart" viewBox="0 0 900 400" role="img" aria-labelledby="chartTitle"></svg>
+        <title id="chartTitle">Ventas acumuladas por día del mes, febrero a septiembre 2026</title>
+        <div class="tip" id="tip"></div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h">
+      <div>
+        <h2 class="sec-t">Todos los meses, al mismo día</h2>
+        <p class="sec-d" id="barsDesc">Dónde estaba cada mes exactamente en el mismo día. Esta es la comparación
+          que pediste, sin el ruido de los meses que ya cerraron completos.</p>
+      </div>
+    </div>
+    <div class="bars" id="bars"></div>
+  </section>
+
+  <div class="insight">
+    <h3 id="insightH"></h3>
+    <div id="insightB"></div>
+  </div>
+
+  <section>
+    <div class="sec-h">
+      <div>
+        <h2 class="sec-t">Dónde termina septiembre</h2>
+        <p class="sec-d">Dos formas de proyectar el cierre. La primera asume que el ritmo actual se
+          mantiene plano; la segunda usa la forma real de los meses anteriores, que siempre cargan
+          hacia la segunda quincena.</p>
+      </div>
+    </div>
+    <div class="tiles" id="proy" style="margin-top:18px"></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Mes</th><th id="thDia">Al día</th><th>Cierre</th><th>% de meta</th>
+          <th id="thLeads">Leads</th><th>$ por lead</th><th id="thFrac">% del cierre</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <div>
+      <h4>De dónde sale</h4>
+      <p>Hoja <b>Overview 2026 Clínica Dr. Daniel Rivera</b>, fila <b>Total ventas</b> de cada bloque
+        mensual, que ya viene acumulada. Leads de <b>Total Leads</b> y agendas de
+        <b>Total agendamientos Marketing</b>. Meta mensual de $50 M deducida del
+        % de cumplimiento del propio archivo.</p>
+    </div>
+    <div>
+      <h4>Ajustes al leer la hoja</h4>
+      <ul>
+        <li>Febrero tiene días en blanco dentro de una serie acumulada: se arrastra el último
+          valor conocido en vez de leerlos como cero.</li>
+        <li>Marzo trae <b>28 y 29</b> en una sola celda; se reparte el mismo acumulado a ambos días.</li>
+        <li>El 6 de septiembre el total de agendas dice <b>11</b>, pero sus componentes suman
+          <b>1</b>. Se toma 1. Vale la pena corregirlo en la hoja.</li>
+        <li>Febrero a mayo no tienen fila de agendamientos, por eso el gráfico de agendas
+          arranca en junio.</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Actualización</h4>
+      <p>Esta página <b>lee la hoja en vivo</b>. Cada visita trae los datos como estén en ese
+        momento; se guardan 10 minutos en caché para que cargue rápido. No hay nada que
+        exportar ni volver a subir: escribes en la hoja y aquí se ve.</p>
+      <p style="margin-top:9px">Última lectura: <b id="generado"></b></p>
+    </div>
+  </footer>
+</div>
+
+<script>
+const P = <?!= JSON.stringify(payload) ?>;
+const DATA = P.data;
+const MESES = P.meses;
+const ABBR = {Febrero:'FEB',Marzo:'MAR',Abril:'ABR',Mayo:'MAY',Junio:'JUN',Julio:'JUL',Agosto:'AGO',Septiembre:'SEP'};
+const DIAS = {}; MESES.forEach(function(m){ DIAS[m] = DATA.ventas[m].length; });
+const HOY = P.hoy, META = P.meta, ACTUAL = P.actual;
+const cs = getComputedStyle(document.documentElement);
+const C = k => cs.getPropertyValue(k).trim();
+
+const nf = new Intl.NumberFormat('es-CO');
+const money = v => '$' + nf.format(Math.round(v));
+const compact = v => v >= 1e6 ? '$' + (v/1e6).toFixed(v/1e6 >= 10 ? 0 : 1).replace('.',',') + ' M'
+                   : v >= 1e3 ? '$' + Math.round(v/1e3) + ' k' : '$' + Math.round(v);
+const pctf = (a,b) => (b === 0 ? 0 : (a-b)/b*100);
+const sign = n => (n >= 0 ? '+' : '−') + Math.abs(n).toFixed(1).replace('.',',') + '%';
+
+const MET = {
+  ventas:{ key:'ventas', label:'Ventas acumuladas', fmt:compact, full:money, meta:META, metaLabel:'Meta $50 M' },
+  leads: { key:'leads',  label:'Leads acumulados',  fmt:v=>nf.format(v), full:v=>nf.format(v)+' leads' },
+  agend: { key:'agend',  label:'Agendas acumuladas',fmt:v=>nf.format(v), full:v=>nf.format(v)+' agendas' }
+};
+
+/* ============ line chart ============ */
+const NS = 'http://www.w3.org/2000/svg';
+const el = (n,a) => { const e = document.createElementNS(NS,n);
+  for (const k in a) e.setAttribute(k, a[k]); return e; };
+
+let current = 'ventas';
+const svg = document.getElementById('chart'), tip = document.getElementById('tip');
+const W = 900, H = 400, PL = 80, PR = 104, PT = 22, PB = 46;
+const IW = W - PL - PR, IH = H - PT - PB;
+let xOf, yOf;
+
+function draw(metric){
+  const M = MET[metric], src = DATA[M.key];
+  const months = MESES.filter(m => src[m]);
+  svg.textContent = '';
+  document.getElementById('chartTitle').textContent =
+    M.label + ' por día del mes, ' + months[0].toLowerCase() + ' a ' + ACTUAL.toLowerCase();
+
+  let max = 0;
+  months.forEach(m => src[m].forEach(v => { if (v > max) max = v; }));
+  if (M.meta) max = Math.max(max, M.meta);
+  max = max * 1.06;
+
+  xOf = d => PL + (d-1)/30 * IW;
+  yOf = v => PT + IH - (v/max)*IH;
+
+  /* grid + y ticks */
+  const ticks = 5;
+  for (let i = 0; i <= ticks; i++){
+    const v = max/ticks*i, y = yOf(v);
+    svg.appendChild(el('line',{x1:PL,x2:PL+IW,y1:y,y2:y,stroke:C('--line'),'stroke-width':1}));
+    const t = el('text',{x:PL-12,y:y+4,'text-anchor':'end',fill:C('--ink-3'),
+      'font-family':'IBM Plex Mono, monospace','font-size':11});
+    t.textContent = M.fmt(v); svg.appendChild(t);
+  }
+  /* x ticks */
+  [1,5,10,15,20,25,31].forEach(d => {
+    const t = el('text',{x:xOf(d),y:PT+IH+24,'text-anchor':'middle',fill:C('--ink-3'),
+      'font-family':'IBM Plex Mono, monospace','font-size':11});
+    t.textContent = d; svg.appendChild(t);
+  });
+  const xl = el('text',{x:PL+IW/2,y:PT+IH+42,'text-anchor':'middle',fill:C('--ink-3'),
+    'font-family':'IBM Plex Mono, monospace','font-size':10,'letter-spacing':'.12em'});
+  xl.textContent = 'DÍA DEL MES'; svg.appendChild(xl);
+
+  /* meta line */
+  if (M.meta){
+    const y = yOf(M.meta);
+    svg.appendChild(el('line',{x1:PL,x2:PL+IW,y1:y,y2:y,stroke:C('--meta'),
+      'stroke-width':1.5,'stroke-dasharray':'2 4'}));
+    const t = el('text',{x:PL+IW+8,y:y+4,fill:C('--meta'),
+      'font-family':'IBM Plex Mono, monospace','font-size':10.5,'letter-spacing':'.05em'});
+    t.textContent = M.metaLabel; svg.appendChild(t);
+  }
+
+  /* today marker */
+  const hx = xOf(HOY);
+  svg.appendChild(el('line',{x1:hx,x2:hx,y1:PT-4,y2:PT+IH,stroke:C('--now'),
+    'stroke-width':1.5,'stroke-dasharray':'3 3','opacity':.55}));
+  const hl = el('text',{x:hx,y:PT-10,'text-anchor':'middle',fill:C('--now'),
+    'font-family':'IBM Plex Mono, monospace','font-size':10,'font-weight':600,'letter-spacing':'.1em'});
+  hl.textContent = 'HOY · DÍA 9'; svg.appendChild(hl);
+
+  /* series: context first, then identified */
+  const best = months.filter(m => m !== ACTUAL)
+    .reduce((a,b) => (src[a][HOY-1]||0) > (src[b][HOY-1]||0) ? a : b);
+  const style = m => m === ACTUAL ? {c:C('--now'),w:2.8,z:3,lab:true}
+                   : m === best         ? {c:C('--record'),w:2,z:2,lab:true}
+                   : m === MESES[MESES.length-2] ? {c:C('--ink-2'),w:2,z:2,lab:true}
+                                        : {c:C('--faint'),w:1.4,z:1,lab:false};
+
+  const ends = [];
+  months.slice().sort((a,b) => style(a).z - style(b).z).forEach(m => {
+    const s = style(m), pts = src[m];
+    const d = pts.map((v,i) => (i ? 'L' : 'M') + xOf(i+1).toFixed(1) + ' ' + yOf(v).toFixed(1)).join(' ');
+    svg.appendChild(el('path',{d,fill:'none',stroke:s.c,'stroke-width':s.w,
+      'stroke-linejoin':'round','stroke-linecap':'round'}));
+    if (s.lab) ends.push({m,s,x:xOf(pts.length),y:yOf(pts[pts.length-1]),v:pts[pts.length-1]});
+  });
+
+  /* endpoint dot for the live month */
+  const sep = ends.find(e => e.m === ACTUAL);
+  if (sep){
+    svg.appendChild(el('circle',{cx:sep.x,cy:sep.y,r:6,fill:C('--surface'),
+      stroke:C('--now'),'stroke-width':2.5}));
+  }
+
+  /* direct labels, de-collided */
+  ends.sort((a,b) => a.y - b.y);
+  for (let i = 1; i < ends.length; i++)
+    if (ends[i].y - ends[i-1].y < 15) ends[i].y = ends[i-1].y + 15;
+  ends.forEach(e => {
+    const g = el('g',{});
+    const t1 = el('text',{x:e.x+11,y:e.y-1,fill:e.s.c,'font-family':'IBM Plex Mono, monospace',
+      'font-size':10.5,'font-weight':600,'letter-spacing':'.08em'});
+    t1.textContent = ABBR[e.m];
+    const t2 = el('text',{x:e.x+11,y:e.y+12,fill:C('--ink-3'),
+      'font-family':'IBM Plex Mono, monospace','font-size':10.5});
+    t2.textContent = M.fmt(e.v);
+    g.appendChild(t1); g.appendChild(t2); svg.appendChild(g);
+  });
+
+  /* hover layer */
+  const cross = el('line',{x1:0,x2:0,y1:PT,y2:PT+IH,stroke:C('--ink-3'),
+    'stroke-width':1,opacity:0,'pointer-events':'none'});
+  svg.appendChild(cross);
+  const hit = el('rect',{x:PL,y:PT,width:IW,height:IH,fill:'transparent',style:'cursor:crosshair'});
+  svg.appendChild(hit);
+
+  const box = document.getElementById('chartBox');
+  function move(ev){
+    const r = svg.getBoundingClientRect();
+    const px = (ev.clientX - r.left) / r.width * W;
+    let d = Math.round((px - PL)/IW * 30) + 1;
+    d = Math.max(1, Math.min(31, d));
+    cross.setAttribute('x1', xOf(d)); cross.setAttribute('x2', xOf(d));
+    cross.setAttribute('opacity', .4);
+    const rows = months.filter(m => src[m][d-1] !== undefined)
+      .map(m => ({m, v:src[m][d-1], c:style(m).c}))
+      .sort((a,b) => b.v - a.v);
+    tip.innerHTML = '<div class="th">Día ' + d + '</div>' + rows.map(r =>
+      '<div class="tr' + (r.m === ACTUAL ? ' on' : '') + '">' +
+      '<span class="tk"><span class="td" style="background:' + r.c + '"></span>' + ABBR[r.m] + '</span>' +
+      '<span>' + MET[metric].fmt(r.v) + '</span></div>').join('');
+    const bw = box.getBoundingClientRect();
+    const left = (xOf(d)/W) * bw.width;
+    tip.style.left = Math.min(Math.max(left + 16, 8), bw.width - 176) + 'px';
+    tip.style.top = '26px';
+    tip.style.opacity = 1;
+  }
+  hit.addEventListener('mousemove', move);
+  hit.addEventListener('mouseleave', () => { tip.style.opacity = 0; cross.setAttribute('opacity',0); });
+
+  /* legend */
+  const lg = [
+    {c:C('--now'), t:ACTUAL + ' (en curso)'},
+    {c:C('--record'), t:best + ' — mejor al día ' + HOY},
+  ];
+  const ANT = MESES[MESES.length-2];
+  if (best !== ANT) lg.push({c:C('--ink-2'), t:ANT + ' — mes pasado'});
+  lg.push({c:C('--faint'), t:'Meses anteriores'});
+  document.getElementById('legend').innerHTML = lg.map(l =>
+    '<span class="lg"><span class="sw" style="background:' + l.c + '"></span>' + l.t + '</span>').join('');
+}
+
+/* ============ bars ============ */
+function bars(){
+  const src = DATA.ventas;
+  const rows = MESES.map(m => ({m, v:src[m][HOY-1]})).sort((a,b) => b.v - a.v);
+  const max = rows[0].v;
+  document.getElementById('bars').innerHTML = rows.map(r => {
+    const cls = r.m === ACTUAL ? 'hi' : (r.v === max ? 'rec' : '');
+    return '<div class="bar ' + cls + '"><span class="bl">' + r.m + '</span>' +
+      '<span class="track"><span class="fill" style="width:' + (r.v/max*100).toFixed(1) + '%"></span></span>' +
+      '<span class="bv">' + money(r.v) + '</span></div>';
+  }).join('');
+}
+
+/* ============ table ============ */
+function table(){
+  const v = DATA.ventas, l = DATA.leads;
+  const rows = MESES.map(m => {
+    const cierre = v[m][DIAS[m]-1], al9 = v[m][HOY-1], le = l[m][HOY-1];
+    const live = m === ACTUAL;
+    return {m, al9, cierre, live, meta:cierre/META*100, leads:le,
+            perLead:le ? al9/le : 0, frac:cierre ? al9/cierre*100 : 0};
+  });
+  const bestClose = Math.max(...rows.filter(r => !r.live).map(r => r.cierre));
+  document.getElementById('tbody').innerHTML = rows.map(r =>
+    '<tr class="' + (r.live ? 'now' : (r.cierre === bestClose ? 'rec' : '')) + '">' +
+    '<td>' + r.m + (r.live ? ' · en curso' : '') + '</td>' +
+    '<td>' + money(r.al9) + '</td>' +
+    '<td>' + (r.live ? '—' : money(r.cierre)) + '</td>' +
+    '<td' + (r.live ? '' : (r.meta >= 100 ? ' class="pos"' : '')) + '>' +
+      (r.live ? '—' : r.meta.toFixed(1).replace('.',',') + ' %') + '</td>' +
+    '<td>' + nf.format(r.leads) + '</td>' +
+    '<td>' + money(r.perLead) + '</td>' +
+    '<td>' + (r.live ? '—' : r.frac.toFixed(0) + ' %') + '</td></tr>').join('');
+}
+
+
+/* ============ textos dinámicos ============ */
+function hydrate(){
+  const v = DATA.ventas, hoy = HOY, act = ACTUAL;
+  const mio = P.alDia[act], ant = MESES[MESES.length-2];
+  const dAnt = pctf(mio, P.alDia[ant]);
+  const dMej = pctf(mio, P.alDia[P.mejor]);
+  const dPro = pctf(mio, P.promedio);
+  const ord = ['1.º','2.º','3.º','4.º','5.º','6.º','7.º','8.º','9.º','10.º','11.º','12.º'];
+  const esMejor = P.puesto === 1;
+
+  document.getElementById('stamp').innerHTML =
+    'Corte <b>día ' + hoy + '</b> · ' + act.toLowerCase() + ' 2026';
+
+  document.getElementById('verdict').innerHTML = esMejor
+    ? act + ' va <em>de primero</em>. Es el mejor arranque del año.'
+    : act + ' va <em>' + ord[P.puesto-1].replace('.º','º') + '</em>. Solo ' +
+      (P.puesto === 2 ? P.mejor.toLowerCase() + ' arrancó mejor.'
+                      : (P.puesto-1) + ' meses arrancaron mejor.');
+
+  document.getElementById('heroNum').textContent = money(mio);
+  document.getElementById('heroSub').textContent =
+    'Ventas acumuladas al día ' + hoy + ' de ' + act.toLowerCase();
+  document.getElementById('rank').textContent =
+    ord[P.puesto-1] + ' de ' + MESES.length + ' meses';
+
+  const tile = (h1,h2,val,cls,foot) =>
+    '<div class="tile"><div class="tile-h"><span>' + h1 + '</span><span>' + h2 + '</span></div>' +
+    '<div class="delta ' + cls + '">' + val + '</div>' +
+    '<div class="tile-f">' + foot + '</div></div>';
+  const deltaEl = d => '<span class="arrow">' + (d>=0?'▲':'▼') + '</span>' +
+    Math.abs(d).toFixed(1).replace('.',',') + '<span style="font-size:17px">%</span>';
+  const gap = d => compact(Math.abs(mio - d));
+
+  document.getElementById('tiles').innerHTML =
+    tile('vs. ' + ant.toLowerCase(), 'mes pasado', deltaEl(dAnt), dAnt>=0?'up':'down',
+      ant + ' al día ' + hoy + ': <b>' + money(P.alDia[ant]) + '</b><br>' +
+      (dAnt>=0 ? 'Vamos <b>' + gap(P.alDia[ant]) + '</b> por encima'
+               : 'Vamos <b>' + gap(P.alDia[ant]) + '</b> por debajo')) +
+    tile('vs. ' + P.mejor.toLowerCase(), 'mejor arranque', deltaEl(dMej), dMej>=0?'up':'down',
+      P.mejor + ' al día ' + hoy + ': <b>' + money(P.alDia[P.mejor]) + '</b><br>' +
+      (dMej>=0 ? 'Lo superamos por <b>' + gap(P.alDia[P.mejor]) + '</b>'
+               : 'Nos faltan <b>' + gap(P.alDia[P.mejor]) + '</b> para igualarlo')) +
+    tile('vs. promedio', (MESES.length-1) + ' meses', deltaEl(dPro), dPro>=0?'up':'down',
+      'Promedio al día ' + hoy + ': <b>' + money(P.promedio) + '</b>');
+
+  document.getElementById('barsDesc').textContent =
+    'Dónde estaba cada mes exactamente en su día ' + hoy + '. Esta es la comparación directa, ' +
+    'sin el ruido de los meses que ya cerraron completos.';
+
+  /* el insight: el mes que peor arrancó y mejor cerró */
+  const prev = MESES.slice(0,-1);
+  const cierre = m => v[m][v[m].length-1];
+  const mejorCierre = prev.reduce((a,b) => cierre(a) > cierre(b) ? a : b);
+  const fr = m => cierre(m) ? P.alDia[m]/cierre(m)*100 : 0;
+  const puestoArr = prev.slice().sort((a,b) => P.alDia[b]-P.alDia[a]).indexOf(mejorCierre)+1;
+  const fracs = prev.map(fr).filter(x => x>0);
+  document.getElementById('insightH').textContent = 'El dato que cambia la lectura';
+  document.getElementById('insightB').innerHTML =
+    '<p>' + mejorCierre + ' era el <b>' + ord[puestoArr-1] + ' arranque</b> de los meses cerrados ' +
+    'al día ' + hoy + ' — y terminó siendo el mejor mes: ' + compact(cierre(mejorCierre)) + ', ' +
+    (cierre(mejorCierre)/META*100).toFixed(0) + ' % de la meta. Al día ' + hoy + ' llevaba apenas el <b>' +
+    fr(mejorCierre).toFixed(0) + ' %</b> de lo que terminó vendiendo.</p>' +
+    '<p>Entre los meses cerrados, al día ' + hoy + ' llevaban entre el ' +
+    Math.min.apply(null,fracs).toFixed(0) + ' % y el ' + Math.max.apply(null,fracs).toFixed(0) +
+    ' % de su cierre. La posición de hoy es una señal, no un veredicto: el mes se define ' +
+    'en la segunda quincena.</p>';
+
+  const agAct = DATA.agend[act] ? DATA.agend[act][hoy-1] : null;
+  document.getElementById('proy').innerHTML =
+    tile('Ritmo plano','× 30 días','<span style="color:var(--ink)">' + compact(P.proyLineal) + '</span>','',
+      (P.proyLineal/META*100).toFixed(1).replace('.',',') + ' % de la meta de <b>' + compact(META) + '</b>') +
+    tile('Por forma de curva','histórico','<span style="color:var(--ink)">' + compact(P.proyCurva) + '</span>','',
+      (P.proyCurva/META*100).toFixed(1).replace('.',',') + ' % de la meta · al día ' + hoy +
+      ' los meses llevan <b>' + (P.fracProm*100).toFixed(0) + ' %</b> de su cierre') +
+    (agAct !== null ? tile('Agendas al día ' + hoy,'indicador adelantado',
+      '<span style="color:var(--ink)">' + agAct + '</span>','',
+      prev.filter(m => DATA.agend[m]).map(m =>
+        m.slice(0,3).toLowerCase() + ' <b>' + DATA.agend[m][hoy-1] + '</b>').join(' · ')) : '');
+
+  document.getElementById('thDia').textContent = 'Al día ' + hoy;
+  document.getElementById('thLeads').textContent = 'Leads al ' + hoy;
+  document.getElementById('thFrac').textContent = '% del cierre al ' + hoy;
+  document.getElementById('generado').textContent = P.generado;
+}
+
+document.querySelectorAll('.seg button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true');
+    current = b.dataset.m; draw(current);
+  });
+});
+
+draw('ventas'); bars(); table(); hydrate();
+</script>
