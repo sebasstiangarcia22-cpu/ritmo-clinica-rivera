@@ -372,7 +372,9 @@ function hydrate(){
   const fr=m=>cierre(m)?alDia[m]/cierre(m)*100:0;
   const fracs=prev.map(fr).filter(x=>x>0);
   const fracProm=fracs.reduce((a,b)=>a+b,0)/fracs.length;
-  const proy=mio/fracProm*100;
+  // fracProm viene en PORCENTAJE (ej. 37.3), así que hay que dividir por fracProm/100.
+  const proyeccion = mio/(fracProm/100);
+  const proyPctMeta = proyeccion/META*100;
   const ag=DATA.agend&&DATA.agend[ACTUAL]?DATA.agend[ACTUAL][HOY-1]:null;
   const agAnt=DATA.agend&&DATA.agend[ANT]?DATA.agend[ANT][HOY-1]:null;
 
@@ -383,8 +385,8 @@ function hydrate(){
       +' llevaba el <b>'+fr(mejorCierre).toFixed(0)+' %</b> de lo que terminó vendiendo.'],
     ['02','Al día '+HOY+' los meses cerrados llevaban entre <b>'+Math.min.apply(null,fracs).toFixed(0)
       +' %</b> y <b>'+Math.max.apply(null,fracs).toFixed(0)+' %</b> de su cierre. Manteniendo la forma '
-      +'histórica, '+ACTUAL.toLowerCase()+' cerraría cerca de <b>'+compact(mio/fracProm)+'</b> ('
-      +proy.toFixed(0)+' % de la meta).']
+      +'histórica, '+ACTUAL.toLowerCase()+' cerraría cerca de <b>'+compact(proyeccion)+'</b>, '
+      +'el <b>'+proyPctMeta.toFixed(0)+' %</b> de la meta de '+compact(META)+'.']
   ];
   if(ag!==null&&agAnt!==null) notas.push(['03','Agendas al día '+HOY+': <b>'+ag+'</b> contra <b>'+agAnt
     +'</b> de '+ANT.toLowerCase()+'. Es el indicador que se mueve antes que la venta.']);
