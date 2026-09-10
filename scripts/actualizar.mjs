@@ -47,6 +47,30 @@ if (!serie || serie.length !== p.hoy) {
   process.exit(1);
 }
 
+// La hoja escribe "$ -" en los días sin cargar, y Apps Script los devuelve como 0.
+// En una serie ACUMULADA eso es imposible: nunca baja. Un 0 que aparece después de
+// un valor positivo significa "no se cargó ese día", así que arrastramos el anterior.
+// Los ceros del arranque del mes sí son reales (todavía no había vendido nada).
+function normalizar(serie) {
+  let ultimo = 0;
+  return serie.map(v => {
+    if (v === null || v === undefined || (v === 0 && ultimo > 0)) return ultimo;
+    ultimo = v;
+    return v;
+  });
+}
+
+let corregidos = 0;
+for (const grupo of ['ventas', 'leads', 'agend']) {
+  for (const mes of Object.keys(p.data[grupo] || {})) {
+    const antes = p.data[grupo][mes];
+    const despues = normalizar(antes);
+    corregidos += antes.filter((v, i) => v !== despues[i]).length;
+    p.data[grupo][mes] = despues;
+  }
+}
+if (corregidos) console.log('Días sin cargar arrastrados: ' + corregidos);
+
 const salida =
   '// Datos de la hoja Overview 2026 Clinica Dr. Daniel Rivera.\n' +
   '// Generado automáticamente por .github/workflows/actualizar.yml — no editar a mano.\n' +
