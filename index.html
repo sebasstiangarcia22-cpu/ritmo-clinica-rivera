@@ -62,6 +62,14 @@ h1{font-size:15px;font-weight:600;letter-spacing:-.01em;margin:5px 0 0}
   font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.06em;
   text-transform:uppercase;align-self:center}
 
+.split{margin-top:20px;max-width:470px}
+.split-bar{display:flex;height:7px;border-radius:4px;overflow:hidden;gap:2px;background:var(--surface-2)}
+.split-bar span{display:block;height:100%}
+.split-k{display:flex;justify-content:space-between;gap:18px;margin-top:10px;
+  font-family:var(--mono);font-size:11px;color:var(--ink-2);letter-spacing:.02em}
+.split-k i{font-style:normal;display:inline-block;width:9px;height:9px;border-radius:2px;
+  margin-right:7px;vertical-align:baseline}
+.split-k b{color:var(--ink);font-weight:600}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:13px;margin-top:28px}
 .tile{background:var(--surface);border:1px solid var(--line);border-radius:5px;
   padding:17px 17px 15px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
@@ -115,8 +123,10 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 .bar:last-child{border-bottom:0}
 .bar .bl{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);letter-spacing:.03em}
 .bar.hi .bl,.bar.hi .bv{color:var(--ink);font-weight:600}
-.bar .track{height:18px}
-.bar .fill{height:100%;border-radius:0 3px 3px 0;background:var(--faint);display:block}
+.bar .track{height:18px;display:flex;gap:2px}
+.bar .fill{height:100%;background:var(--faint);display:block}
+.bar .fill:last-child{border-radius:0 3px 3px 0}
+.bar .fill.sub{opacity:.36}
 .bar.hi .fill{background:var(--now)}
 .bar.rec .fill{background:var(--record)}
 .bar .bv{font-family:var(--mono);font-size:12px;text-align:right;color:var(--ink-2)}
@@ -158,6 +168,7 @@ footer{margin-top:34px;font-family:var(--mono);font-size:11px;color:var(--ink-3)
       </div>
       <div class="rank" id="rank"></div>
     </div>
+    <div class="split" id="split"></div>
     <div class="tiles" id="tiles"></div>
   </div>
 
@@ -204,6 +215,7 @@ const P = window.RIVERA, DATA = P, HOY = P.corte, META = P.meta;
 const MESES = Object.keys(P.ventas), ACTUAL = MESES[MESES.length-1], ANT = MESES[MESES.length-2];
 const ABBR = {Enero:'ENE',Febrero:'FEB',Marzo:'MAR',Abril:'ABR',Mayo:'MAY',Junio:'JUN',
   Julio:'JUL',Agosto:'AGO',Septiembre:'SEP',Octubre:'OCT',Noviembre:'NOV',Diciembre:'DIC'};
+const PROPIO = 'Dr. Daniel';
 const ORD = ['1.º','2.º','3.º','4.º','5.º','6.º','7.º','8.º','9.º','10.º','11.º','12.º'];
 
 const cs = getComputedStyle(document.documentElement), C = k => cs.getPropertyValue(k).trim();
@@ -336,10 +348,23 @@ function draw(metric){
 /* ---- barras ---- */
 function bars(){
   const rows=MESES.map(m=>({m,v:alDia[m]})).sort((a,b)=>b.v-a.v), max=rows[0].v;
-  document.getElementById('bars').innerHTML=rows.map(r=>
-    '<div class="bar '+(r.m===ACTUAL?'hi':(r.v===max?'rec':''))+'">'
-    +'<span class="bl">'+r.m+'</span><span class="track"><span class="fill" style="width:'
-    +(r.v/max*100).toFixed(1)+'%"></span></span><span class="bv">'+money(r.v)+'</span></div>').join('');
+  document.getElementById('bars').innerHTML=rows.map(r=>{
+    // Cada barra se parte en marketing (lleno) y propio (mismo color, atenuado).
+    // El color sigue diciendo qué mes es; la opacidad, de dónde viene la venta.
+    const mk=DATA.mkt&&DATA.mkt[r.m]?DATA.mkt[r.m][HOY-1]:null;
+    const pr=DATA.propio&&DATA.propio[r.m]?DATA.propio[r.m][HOY-1]:null;
+    let segs;
+    if(mk===null||pr===null){
+      segs='<span class="fill" style="width:'+(r.v/max*100).toFixed(1)+'%"></span>';
+    }else{
+      segs=(mk>0?'<span class="fill" style="width:'+(mk/max*100).toFixed(1)+'%"></span>':'')
+         + (pr>0?'<span class="fill sub" style="width:'+(pr/max*100).toFixed(1)+'%"></span>':'');
+      if(!segs) segs='<span class="fill" style="width:0%"></span>';
+    }
+    return '<div class="bar '+(r.m===ACTUAL?'hi':(r.v===max?'rec':''))+'">'
+      +'<span class="bl">'+r.m+'</span><span class="track">'+segs+'</span>'
+      +'<span class="bv">'+money(r.v)+'</span></div>';
+  }).join('');
 }
 
 /* ---- textos ---- */
@@ -355,6 +380,23 @@ function hydrate(){
   document.getElementById('heroNum').textContent=money(mio);
   document.getElementById('heroSub').textContent='Ventas acumuladas al día '+HOY+' de '+ACTUAL.toLowerCase();
   document.getElementById('rank').textContent=ORD[puesto-1]+' de '+MESES.length;
+
+  // Desglose marketing / propio. Si la hoja todavía no lo trae, no se dibuja nada.
+  const mk=DATA.mkt&&DATA.mkt[ACTUAL]?DATA.mkt[ACTUAL][HOY-1]:null;
+  const pr=DATA.propio&&DATA.propio[ACTUAL]?DATA.propio[ACTUAL][HOY-1]:null;
+  const elSplit=document.getElementById('split');
+  if(mk===null||pr===null||(mk+pr)===0){ elSplit.innerHTML=''; }
+  else{
+    const t=mk+pr, pm=mk/t*100;
+    elSplit.innerHTML=
+      '<div class="split-bar">'
+      +'<span style="width:'+pm.toFixed(1)+'%;background:var(--now)"></span>'
+      +'<span style="width:'+(100-pm).toFixed(1)+'%;background:var(--now);opacity:.36"></span></div>'
+      +'<div class="split-k">'
+      +'<span><i style="background:var(--now)"></i>Marketing <b>'+compact(mk)+'</b> · '+pm.toFixed(0)+' %</span>'
+      +'<span><i style="background:var(--now);opacity:.36"></i>'+PROPIO+' <b>'+compact(pr)+'</b> · '+(100-pm).toFixed(0)+' %</span>'
+      +'</div>';
+  }
 
   const arrow=d=>'<span class="arrow">'+(d>=0?'▲':'▼')+'</span>'+
     Math.abs(d).toFixed(1).replace('.',',')+'<span style="font-size:16px">%</span>';

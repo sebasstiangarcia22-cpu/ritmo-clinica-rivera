@@ -61,7 +61,7 @@ function normalizar(serie) {
 }
 
 let corregidos = 0;
-for (const grupo of ['ventas', 'leads', 'agend']) {
+for (const grupo of Object.keys(p.data)) {
   for (const mes of Object.keys(p.data[grupo] || {})) {
     const antes = p.data[grupo][mes];
     const despues = normalizar(antes);
