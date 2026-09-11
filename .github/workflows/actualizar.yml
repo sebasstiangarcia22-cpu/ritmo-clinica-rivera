@@ -2,9 +2,14 @@ name: Actualizar tablero
 
 on:
   schedule:
-    # 17:00 UTC = 12:00 en Colombia (UTC-5, sin horario de verano).
-    # 1-6 = lunes a sábado.
-    - cron: '0 17 * * 1-6'
+    # 17:xx UTC = 12:xx en Colombia (UTC-5, sin horario de verano). 1-6 = lunes a sábado.
+    # Tres intentos dentro de la hora del mediodía, y a propósito NO en punto:
+    # GitHub encola los cron de :00 junto con los de medio mundo y los retrasa
+    # (el 11/09 se demoró 2h20m). En minutos sueltos la espera baja mucho.
+    # Si los datos no cambiaron, los intentos extra no hacen commit: salen gratis.
+    - cron: '7 17 * * 1-6'
+    - cron: '27 17 * * 1-6'
+    - cron: '47 17 * * 1-6'
   workflow_dispatch:        # botón para correrlo a mano desde la pestaña Actions
 
 # Un solo run a la vez: evita que dos commits choquen.
