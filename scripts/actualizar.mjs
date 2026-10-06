@@ -76,7 +76,7 @@ function normalizar(serie) {
 }
 
 let corregidos = 0;
-for (const grupo of Object.keys(p.data)) {
+for (const grupo of p.schemaVersion === 2 ? [] : Object.keys(p.data)) {
   for (const mes of Object.keys(p.data[grupo] || {})) {
     const antes = p.data[grupo][mes];
     const despues = normalizar(antes);
@@ -90,6 +90,8 @@ const salida =
   '// Datos de la hoja Overview 2026 Clinica Dr. Daniel Rivera.\n' +
   '// Generado automáticamente por .github/workflows/actualizar.yml — no editar a mano.\n' +
   'window.RIVERA = ' + JSON.stringify(p.data) + ';\n' +
+  'window.RIVERA.periodos = ' + JSON.stringify(p.periodos || {}) + ';\n' +
+  'window.RIVERA.anio = ' + JSON.stringify(p.anio || 2026) + ';\n' +
   'window.RIVERA.corte = ' + p.hoy + ';\n' +
   'window.RIVERA.meta = ' + p.meta + ';\n' +
   'window.RIVERA.actualizado = ' + JSON.stringify(p.generado) + ';\n';
@@ -105,3 +107,4 @@ if (soloDatos(previo) === soloDatos(salida)) {
 writeFileSync('data.js', salida);
 console.log('Actualizado: ' + mesActual + ' día ' + p.hoy + ' — ' +
   p.data.ventas[mesActual][p.hoy-1].toLocaleString('es-CO') + ' acumulado');
+
