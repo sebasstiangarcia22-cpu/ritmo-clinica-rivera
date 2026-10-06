@@ -147,18 +147,42 @@ footer{margin-top:34px;font-family:var(--mono);font-size:11px;color:var(--ink-3)
   .bar{grid-template-columns:60px 1fr 90px;gap:9px}
   .bar .bv{font-size:11px}
 }
+
+.controls{display:flex;gap:12px;align-items:end;flex-wrap:wrap;padding:18px 0;border-bottom:1px solid var(--line)}
+.controls label{display:flex;flex-direction:column;gap:5px;color:var(--ink-2);font-size:12px}
+.controls select,.controls input,.action{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line-strong);border-radius:5px;padding:8px 10px;min-height:38px}
+.controls input{width:76px}.action{cursor:pointer}.action:disabled{opacity:.6;cursor:wait}
+.controls select:focus-visible,.action:focus-visible,input:focus-visible{outline:2px solid var(--now);outline-offset:2px}
+#status{font-size:12px;color:var(--ink-2);min-height:18px;margin-top:6px}
+.warning{background:var(--surface-2);border-left:3px solid var(--record);padding:10px 12px;color:var(--ink);font-size:12px}
+.split{max-width:none}.split-k{flex-wrap:wrap;justify-content:flex-start}.split-k span{display:inline-block}
+#operations{color:var(--ink-2);margin-top:16px;font-size:13px}
+.hero{padding-top:12px}.verdict{max-width:none}.chart-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.capture .wrap{max-width:1100px;padding-top:18px}.capture .hero{padding-top:0}.capture section{margin-top:24px}.capture .notes{display:none}.capture .chart-box{max-width:740px;margin:auto}.capture .controls{padding:8px 0}.capture #status{display:none}
+[hidden]{display:none!important}
+@media(max-width:600px){.controls{gap:8px}.controls label{flex:1;min-width:130px}.controls select{width:100%}.split-k{flex-direction:column;gap:8px}.bar{grid-template-columns:80px 1fr 115px}.tiles{grid-template-columns:1fr}.verdict{font-size:27px}}
+@media print{.controls,#status,.chart-tools,.notes{display:none}.wrap{padding:0}.tile,.chart-card{box-shadow:none}section{break-inside:avoid}}
 </style>
 </head>
-<body>
+<body data-propio="Consultorio">
 <div class="wrap">
   <div class="masthead">
     <div>
       <div class="eyebrow">Clínica Dr. Daniel Rivera</div>
-      <h1>Ritmo del mes contra el mismo día de cada mes</h1>
+      <h1>Ventas, origen y comparación mensual</h1>
     </div>
     <div class="stamp" id="stamp"></div>
   </div>
 
+  <div class="controls" aria-label="Filtros del informe">
+    <label>Mes del informe<select id="periodo"></select></label>
+    <label>Comparar<select id="modo"><option value="dia">Al mismo día</option><option value="completo">Mes completo</option></select></label>
+    <label id="dayControl">Día de corte<input id="dia" type="number" min="1" max="31"></label>
+    <button class="action" id="refresh" type="button">Actualizar datos</button>
+    <button class="action" id="capture" type="button" aria-pressed="false">Vista para captura</button>
+  </div>
+  <div id="status" role="status" aria-live="polite"></div>
+  <p id="notice" class="warning" hidden></p>
   <div class="hero">
     <p class="verdict" id="verdict"></p>
     <div class="heroline">
@@ -169,20 +193,20 @@ footer{margin-top:34px;font-family:var(--mono);font-size:11px;color:var(--ink-3)
       <div class="rank" id="rank"></div>
     </div>
     <div class="split" id="split"></div>
-    <div class="tiles" id="tiles"></div>
+    <div id="operations"></div><div class="tiles" id="tiles"></div>
   </div>
 
   <section>
     <div class="sec-h">
       <div>
         <h2 class="sec-t">La carrera, día por día</h2>
-        <p class="sec-d">Cada línea es un mes acumulándose desde su día 1. La vertical marca hoy.</p>
+        <p class="sec-d" id="chartDesc">Acumulado por día del mes.</p>
       </div>
-      <div class="seg" role="group" aria-label="Métrica">
+      <div class="chart-tools"><label><input type="checkbox" id="historial"> Ver historial</label><div class="seg" role="group" aria-label="Métrica">
         <button type="button" data-m="ventas" aria-pressed="true">Ventas</button>
         <button type="button" data-m="leads" aria-pressed="false">Leads</button>
         <button type="button" data-m="agend" aria-pressed="false">Agendas</button>
-      </div>
+      </div></div>
     </div>
     <div class="chart-card">
       <div class="chart-box" id="chartBox">
@@ -196,7 +220,7 @@ footer{margin-top:34px;font-family:var(--mono);font-size:11px;color:var(--ink-3)
   </section>
 
   <section>
-    <h2 class="sec-t">Todos los meses, al mismo día</h2>
+    <h2 class="sec-t" id="barsTitle">Comparación mensual</h2><p class="sec-d" id="barsDesc"></p>
     <div class="bars" id="bars"></div>
   </section>
 
@@ -210,244 +234,151 @@ footer{margin-top:34px;font-family:var(--mono);font-size:11px;color:var(--ink-3)
 
 <script src="data.js"></script>
 <script>
+// All comparisons are based on the selected period, never on a later month.
+function resumenPeriodo(P, seleccionado, modo, dia) {
+  const calendario = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const meses = Object.keys(P.ventas || {}).sort((a,b)=>calendario.indexOf(a)-calendario.indexOf(b));
+  const fecha = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Bogota',year:'numeric',month:'numeric'}).formatToParts(new Date());
+  const anioActual = Number(fecha.find(x=>x.type==='year').value), mesActual = Number(fecha.find(x=>x.type==='month').value)-1;
+  const periodo = m => {
+    const anio=P.anio || 2026, indice=calendario.indexOf(m);
+    return P.periodos?.[m] || {anio, dias:new Date(anio,indice+1,0).getDate(),corte:P.ventas[m].length,cerrado:anio<anioActual || (anio===anioActual && indice<mesActual),faltantes:[]};
+  };
+  const info=periodo(seleccionado);
+  const completo=modo==='completo' && info.cerrado;
+  const corte=Math.max(1,Math.min(Number(dia)||info.corte,info.corte,info.dias));
+  const valor=(k,m)=>{
+    const p=periodo(m), s=P[k]?.[m];
+    if(!s?.length || (completo && (!p.cerrado || p.corte<p.dias))) return null;
+    const d=completo?p.dias:Math.min(corte,p.dias);
+    const v=s[d-1];
+    return typeof v==='number' && Number.isFinite(v) && !(p.faltantes || []).includes(d)?v:null;
+  };
+  const candidatos=meses.slice(0,meses.indexOf(seleccionado)+1);
+  const comparables=candidatos.filter(m=>valor('ventas',m)!==null);
+  const previos=comparables.filter(m=>m!==seleccionado);
+  const total=valor('ventas',seleccionado);
+  const promedio=previos.length?previos.reduce((s,m)=>s+valor('ventas',m),0)/previos.length:null;
+  const mejor=previos.reduce((a,b)=>a===null || valor('ventas',b)>valor('ventas',a)?b:a,null);
+  const anterior=candidatos[candidatos.length-2];
+  const puesto=total===null?null:1+previos.filter(m=>valor('ventas',m)>total).length;
+  const origenes=comparables.filter(m=>valor('mkt',m)!==null && valor('propio',m)!==null && valor('ventas',m)>0);
+  const base=origenes.reduce((s,m)=>s+valor('ventas',m),0);
+  const peso=base?origenes.reduce((s,m)=>s+valor('mkt',m),0)/base*100:null;
+  return {meses,periodo,info,completo,corte,valor,candidatos,comparables,previos,total,promedio,mejor,anterior,puesto,peso,origenes};
+}
 (function(){
-const P = window.RIVERA, DATA = P, HOY = P.corte, META = P.meta;
-const MESES = Object.keys(P.ventas), ACTUAL = MESES[MESES.length-1], ANT = MESES[MESES.length-2];
-const ABBR = {Enero:'ENE',Febrero:'FEB',Marzo:'MAR',Abril:'ABR',Mayo:'MAY',Junio:'JUN',
-  Julio:'JUL',Agosto:'AGO',Septiembre:'SEP',Octubre:'OCT',Noviembre:'NOV',Diciembre:'DIC'};
-const PROPIO = 'Dr. Daniel';
-const ORD = ['1.º','2.º','3.º','4.º','5.º','6.º','7.º','8.º','9.º','10.º','11.º','12.º'];
-
-const cs = getComputedStyle(document.documentElement), C = k => cs.getPropertyValue(k).trim();
-const nf = new Intl.NumberFormat('es-CO');
-const money = v => '$' + nf.format(Math.round(v));
-const compact = v => v >= 1e6 ? '$' + (v/1e6).toFixed(v/1e6 >= 10 ? 0 : 1).replace('.',',') + ' M'
-                   : v >= 1e3 ? '$' + Math.round(v/1e3) + ' k' : '$' + Math.round(v);
-const pctf = (a,b) => b ? (a-b)/b*100 : 0;
-
-const MET = {
-  ventas:{k:'ventas', fmt:compact,        meta:META, metaLabel:'Meta ' + compact(META)},
-  leads: {k:'leads',  fmt:v=>nf.format(v)},
-  agend: {k:'agend',  fmt:v=>nf.format(v)}
-};
-
-/* ---- estadistica base ---- */
-const alDia = {}; MESES.forEach(m => alDia[m] = DATA.ventas[m][HOY-1]);
-const prev = MESES.slice(0,-1);
-const mejor = prev.reduce((a,b) => alDia[a] > alDia[b] ? a : b);
-const prom = prev.reduce((s,m) => s + alDia[m], 0) / prev.length;
-const puesto = MESES.slice().sort((a,b) => alDia[b]-alDia[a]).indexOf(ACTUAL) + 1;
-const cierre = m => DATA.ventas[m][DATA.ventas[m].length-1];
-
-/* ---- grafico ---- */
-const NS='http://www.w3.org/2000/svg';
-const el=(n,a)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);return e;};
-const svg=document.getElementById('chart'), tip=document.getElementById('tip');
-const W=900,H=380,PL=80,PR=104,PT=22,PB=44, IW=W-PL-PR, IH=H-PT-PB;
-
-function draw(metric){
-  const M=MET[metric], src=DATA[M.k];
-  const months=MESES.filter(m=>src[m]);
-  svg.textContent='';
-  const ttl=el('title',{id:'chartTitle'});
-  ttl.textContent=(metric==='ventas'?'Ventas':metric==='leads'?'Leads':'Agendas')+' acumuladas por día del mes';
-  svg.appendChild(ttl);
-
-  let max=0; months.forEach(m=>src[m].forEach(v=>{if(v>max)max=v;}));
-  if(M.meta) max=Math.max(max,M.meta);
-  max*=1.06;
-  const xOf=d=>PL+(d-1)/30*IW, yOf=v=>PT+IH-(v/max)*IH;
-
-  for(let i=0;i<=5;i++){
-    const v=max/5*i, y=yOf(v);
-    svg.appendChild(el('line',{x1:PL,x2:PL+IW,y1:y,y2:y,stroke:C('--line'),'stroke-width':1}));
-    const t=el('text',{x:PL-12,y:y+4,'text-anchor':'end',fill:C('--ink-3'),
-      'font-family':'IBM Plex Mono, monospace','font-size':11});
-    t.textContent=M.fmt(v); svg.appendChild(t);
+  const $=id=>document.getElementById(id), nf=new Intl.NumberFormat('es-CO');
+  const money=v=>v===null || !Number.isFinite(v)?'Sin dato':'$'+nf.format(Math.round(v));
+  const compact=v=>v>=1e6?'$'+(v/1e6).toFixed(1).replace('.',',')+' M':money(v);
+  const percent=v=>v===null || !Number.isFinite(v)?'—':v.toFixed(1).replace('.',',')+' %';
+  const propio=document.body.dataset.propio;
+  let P=window.RIVERA, metric='ventas', selected, mode, day;
+  if(!P?.ventas || !Object.keys(P.ventas).length){$('verdict').textContent='No fue posible cargar los datos.';return;}
+  function options(){
+    const ms=Object.keys(P.ventas);
+    if(!ms.includes(selected))selected=ms.at(-1);
+    $('periodo').innerHTML=ms.slice().reverse().map(m=>'<option value="'+m+'">'+m+' '+(P.anio||2026)+'</option>').join('');
+    $('periodo').value=selected;
   }
-  [1,5,10,15,20,25,31].forEach(d=>{
-    const t=el('text',{x:xOf(d),y:PT+IH+22,'text-anchor':'middle',fill:C('--ink-3'),
-      'font-family':'IBM Plex Mono, monospace','font-size':11});
-    t.textContent=d; svg.appendChild(t);
-  });
-
-  if(M.meta){
-    const y=yOf(M.meta);
-    svg.appendChild(el('line',{x1:PL,x2:PL+IW,y1:y,y2:y,stroke:C('--meta'),
-      'stroke-width':1.5,'stroke-dasharray':'2 4'}));
-    const t=el('text',{x:PL+IW+8,y:y+4,fill:C('--meta'),
-      'font-family':'IBM Plex Mono, monospace','font-size':10.5});
-    t.textContent=M.metaLabel; svg.appendChild(t);
+  function resetPeriod(){
+    const r=resumenPeriodo(P,selected,'dia');
+    mode=r.info.cerrado && r.info.corte>=r.info.dias?'completo':'dia';day=r.info.corte;
   }
-
-  const hx=xOf(HOY);
-  svg.appendChild(el('line',{x1:hx,x2:hx,y1:PT-4,y2:PT+IH,stroke:C('--now'),
-    'stroke-width':1.5,'stroke-dasharray':'3 3',opacity:.55}));
-  const hl=el('text',{x:hx,y:PT-9,'text-anchor':'middle',fill:C('--now'),
-    'font-family':'IBM Plex Mono, monospace','font-size':10,'font-weight':600,'letter-spacing':'.1em'});
-  hl.textContent='HOY · DÍA '+HOY; svg.appendChild(hl);
-
-  const best=months.filter(m=>m!==ACTUAL).reduce((a,b)=>(src[a][HOY-1]||0)>(src[b][HOY-1]||0)?a:b);
-  const style=m=> m===ACTUAL ? {c:C('--now'),w:2.8,z:3,lab:true}
-                : m===best   ? {c:C('--record'),w:2,z:2,lab:true}
-                : m===ANT    ? {c:C('--ink-2'),w:2,z:2,lab:true}
-                             : {c:C('--faint'),w:1.4,z:1,lab:false};
-  const ends=[];
-  months.slice().sort((a,b)=>style(a).z-style(b).z).forEach(m=>{
-    const s=style(m), pts=src[m];
-    const d=pts.map((v,i)=>(i?'L':'M')+xOf(i+1).toFixed(1)+' '+yOf(v).toFixed(1)).join(' ');
-    svg.appendChild(el('path',{d,fill:'none',stroke:s.c,'stroke-width':s.w,
-      'stroke-linejoin':'round','stroke-linecap':'round'}));
-    if(s.lab) ends.push({m,s,x:xOf(pts.length),y:yOf(pts[pts.length-1]),v:pts[pts.length-1]});
-  });
-  const cur=ends.find(e=>e.m===ACTUAL);
-  if(cur) svg.appendChild(el('circle',{cx:cur.x,cy:cur.y,r:6,fill:C('--surface'),
-    stroke:C('--now'),'stroke-width':2.5}));
-
-  ends.sort((a,b)=>a.y-b.y);
-  for(let i=1;i<ends.length;i++) if(ends[i].y-ends[i-1].y<15) ends[i].y=ends[i-1].y+15;
-  ends.forEach(e=>{
-    const t1=el('text',{x:e.x+11,y:e.y-1,fill:e.s.c,'font-family':'IBM Plex Mono, monospace',
-      'font-size':10.5,'font-weight':600,'letter-spacing':'.08em'});
-    t1.textContent=ABBR[e.m];
-    const t2=el('text',{x:e.x+11,y:e.y+12,fill:C('--ink-3'),
-      'font-family':'IBM Plex Mono, monospace','font-size':10.5});
-    t2.textContent=M.fmt(e.v);
-    svg.appendChild(t1); svg.appendChild(t2);
-  });
-
-  const cross=el('line',{x1:0,x2:0,y1:PT,y2:PT+IH,stroke:C('--ink-3'),
-    'stroke-width':1,opacity:0,'pointer-events':'none'});
-  svg.appendChild(cross);
-  const hit=el('rect',{x:PL,y:PT,width:IW,height:IH,fill:'transparent',style:'cursor:crosshair'});
-  svg.appendChild(hit);
-  const box=document.getElementById('chartBox');
-  hit.addEventListener('mousemove',ev=>{
-    const r=svg.getBoundingClientRect();
-    let d=Math.round(((ev.clientX-r.left)/r.width*W-PL)/IW*30)+1;
-    d=Math.max(1,Math.min(31,d));
-    cross.setAttribute('x1',xOf(d)); cross.setAttribute('x2',xOf(d)); cross.setAttribute('opacity',.4);
-    const rows=months.filter(m=>src[m][d-1]!==undefined)
-      .map(m=>({m,v:src[m][d-1],c:style(m).c})).sort((a,b)=>b.v-a.v);
-    tip.innerHTML='<div class="th">Día '+d+'</div>'+rows.map(r=>
-      '<div class="tr'+(r.m===ACTUAL?' on':'')+'"><span class="tk"><span class="td" style="background:'
-      +r.c+'"></span>'+ABBR[r.m]+'</span><span>'+M.fmt(r.v)+'</span></div>').join('');
-    const bw=box.getBoundingClientRect();
-    tip.style.left=Math.min(Math.max(xOf(d)/W*bw.width+16,8),bw.width-176)+'px';
-    tip.style.top='24px'; tip.style.opacity=1;
-  });
-  hit.addEventListener('mouseleave',()=>{tip.style.opacity=0;cross.setAttribute('opacity',0);});
-
-  const lg=[{c:C('--now'),t:ACTUAL+' (en curso)'},{c:C('--record'),t:best+' — mejor al día '+HOY}];
-  if(best!==ANT) lg.push({c:C('--ink-2'),t:ANT+' — mes pasado'});
-  lg.push({c:C('--faint'),t:'Meses anteriores'});
-  document.getElementById('legend').innerHTML=lg.map(l=>
-    '<span class="lg"><span class="sw" style="background:'+l.c+'"></span>'+l.t+'</span>').join('');
-}
-
-/* ---- barras ---- */
-function bars(){
-  const rows=MESES.map(m=>({m,v:alDia[m]})).sort((a,b)=>b.v-a.v), max=rows[0].v;
-  document.getElementById('bars').innerHTML=rows.map(r=>{
-    // Cada barra se parte en marketing (lleno) y propio (mismo color, atenuado).
-    // El color sigue diciendo qué mes es; la opacidad, de dónde viene la venta.
-    const mk=DATA.mkt&&DATA.mkt[r.m]?DATA.mkt[r.m][HOY-1]:null;
-    const pr=DATA.propio&&DATA.propio[r.m]?DATA.propio[r.m][HOY-1]:null;
-    let segs;
-    if(mk===null||pr===null){
-      segs='<span class="fill" style="width:'+(r.v/max*100).toFixed(1)+'%"></span>';
-    }else{
-      segs=(mk>0?'<span class="fill" style="width:'+(mk/max*100).toFixed(1)+'%"></span>':'')
-         + (pr>0?'<span class="fill sub" style="width:'+(pr/max*100).toFixed(1)+'%"></span>':'');
-      if(!segs) segs='<span class="fill" style="width:0%"></span>';
+  const tile=(label,value,detail,cls='')=>'<div class="tile"><div class="tile-h">'+label+'</div><div class="delta '+cls+'">'+value+'</div><div class="tile-f">'+detail+'</div></div>';
+  function comparison(label,base,detail,total){
+    const d=total!==null && base!==null && base>0?(total-base)/base*100:null;
+    return tile(label,d===null?'—':(d>0?'+':'')+percent(d),detail+(base===null?'Sin dato comparable':money(base)),d===null?'':d>=0?'up':'down');
+  }
+  function render(){
+    const R=resumenPeriodo(P,selected,mode,day), v=R.valor, t=R.total;
+    const label=R.completo?'Cierre completo':'Al día '+R.corte;
+    $('modo').value=mode;$('modo').querySelector('[value="completo"]').disabled=!R.info.cerrado || R.info.corte<R.info.dias;
+    $('dia').value=R.corte;$('dia').max=Math.min(R.info.corte,R.info.dias);$('dayControl').hidden=R.completo;
+    $('stamp').textContent=selected+' '+R.info.anio+' · '+(R.info.cerrado?'Mes cerrado':'Mes en curso');
+    $('verdict').innerHTML=selected+' · <em>'+label.toLowerCase()+'</em>';
+    $('heroNum').textContent=money(t);
+    $('heroSub').textContent=R.completo?'Ventas del 1 al '+R.info.dias+' de '+selected.toLowerCase():'Ventas del 1 al '+R.corte+' de '+selected.toLowerCase();
+    $('rank').textContent=R.puesto===null?'Sin dato para este corte':R.puesto+' de '+R.comparables.length+' meses';
+    const warnings=[];
+    if(t===null)warnings.push('La hoja no separa este día. Elige otro corte para ver una comparación válida.');
+    const excluded=R.candidatos.filter(m=>!R.comparables.includes(m));
+    if(excluded.length)warnings.push('Sin dato comparable: '+excluded.join(', ')+'.');
+    if(R.info.corte<R.info.dias && R.info.cerrado)warnings.push('El mes está cerrado, pero la hoja solo tiene datos hasta el día '+R.info.corte+'.');
+    $('notice').textContent=warnings.join(' ');$('notice').hidden=!warnings.length;
+    const mk=v('mkt',selected), pr=v('propio',selected), residual=t!==null && mk!==null && pr!==null?t-mk-pr:null;
+    if(t!==null && mk!==null && pr!==null){
+      const parts=[['Marketing',mk,'var(--now)'],[propio,pr,'var(--good)']];
+      if(residual>0)parts.push(['Otros / por clasificar',residual,'var(--record)']);
+      $('split').innerHTML='<div class="split-bar">'+parts.map(([,n,c])=>'<span style="width:'+(t>0?Math.max(0,Math.min(100,n/t*100)):0)+'%;background:'+c+'"></span>').join('')+'</div><div class="split-k">'+parts.map(([name,n,c])=>'<span><i style="background:'+c+'"></i>'+name+' <b>'+money(n)+'</b> · '+percent(t>0?n/t*100:null)+'</span>').join('')+'</div>'+(residual<0?'<p class="warning">Los orígenes superan el total en '+money(-residual)+'. Revisar la hoja.</p>':'');
+    }else $('split').innerHTML='<p class="sec-d">El desglose por origen aún no está disponible para este corte.</p>';
+    $('operations').textContent='Leads: '+(v('leads',selected)===null?'Sin dato':nf.format(v('leads',selected)))+' · Agendas: '+(v('agend',selected)===null?'Sin dato':nf.format(v('agend',selected)))+' · Meta alcanzada: '+percent(t!==null && P.meta?t/P.meta*100:null);
+    $('tiles').innerHTML=comparison('vs. '+(R.anterior||'mes anterior'),R.anterior?v('ventas',R.anterior):null,label+': ',t)+comparison('vs. promedio histórico',R.promedio,R.previos.length+' meses anteriores · ',t)+tile('Peso de marketing',percent(t>0 && mk!==null?mk/t*100:null),'Promedio ponderado: <b>'+percent(R.peso)+'</b> · '+R.origenes.length+' meses comparables');
+    $('barsTitle').textContent=R.completo?'Cierres de los meses':'Meses al día '+R.corte;
+    $('barsDesc').textContent=R.completo?'Cada mes usa su último día real: 28, 29, 30 o 31.':'Los meses más cortos conservan su cierre al comparar días 29, 30 o 31.';
+    const rows=R.comparables.map(m=>({m,n:v('ventas',m)})).sort((a,b)=>b.n-a.n), max=Math.max(1,...rows.map(r=>r.n));
+    $('bars').innerHTML=rows.map(r=>'<div class="bar '+(r.m===selected?'hi':'')+'"><span class="bl">'+r.m+'</span><span class="track"><span class="fill" style="width:'+Math.max(0,r.n/max*100)+'%"></span></span><span class="bv">'+money(r.n)+'</span></div>').join('');
+    const notes=[R.completo?'Comparación de meses cerrados, usando el total de cada mes.':'Comparación al mismo día del calendario; no se incluyen meses posteriores al seleccionado.'];
+    notes.push('El peso de marketing se calcula sobre las ventas totales. El promedio ponderado es la suma de ventas de marketing dividida entre la suma de ventas totales de los '+R.origenes.length+' meses comparables con desglose, incluido el seleccionado.');
+    if(residual>0)notes.push('Otros / por clasificar conserva la diferencia entre el total y marketing + '+propio+'. Puede incluir referidos comerciales; no se asigna automáticamente a un origen.');
+    if(!R.info.cerrado && t!==null){
+      const fracs=R.previos.map(m=>{const s=P.ventas[m],end=s.at(-1);return R.periodo(m).corte>=R.periodo(m).dias && end>0?v('ventas',m)/end:null;}).filter(x=>x!==null && x>0);
+      if(fracs.length){const projection=t/(fracs.reduce((a,b)=>a+b,0)/fracs.length);notes.push('Proyección orientativa de cierre: '+money(projection)+', basada en '+fracs.length+' meses anteriores. No es una venta confirmada.');}
     }
-    return '<div class="bar '+(r.m===ACTUAL?'hi':(r.v===max?'rec':''))+'">'
-      +'<span class="bl">'+r.m+'</span><span class="track">'+segs+'</span>'
-      +'<span class="bv">'+money(r.v)+'</span></div>';
-  }).join('');
-}
-
-/* ---- textos ---- */
-function hydrate(){
-  const mio=alDia[ACTUAL];
-  const dAnt=pctf(mio,alDia[ANT]), dMej=pctf(mio,alDia[mejor]), dPro=pctf(mio,prom);
-
-  document.getElementById('stamp').innerHTML='Corte <b>día '+HOY+'</b> · '+ACTUAL.toLowerCase()+' 2026';
-  document.getElementById('verdict').innerHTML = puesto===1
-    ? ACTUAL+' va <em>de primero</em>. Es el mejor arranque del año.'
-    : ACTUAL+' va <em>'+ORD[puesto-1].replace('.º','º')+'</em>. '+
-      (puesto===2 ? 'Solo '+mejor.toLowerCase()+' arrancó mejor.' : (puesto-1)+' meses arrancaron mejor.');
-  document.getElementById('heroNum').textContent=money(mio);
-  document.getElementById('heroSub').textContent='Ventas acumuladas al día '+HOY+' de '+ACTUAL.toLowerCase();
-  document.getElementById('rank').textContent=ORD[puesto-1]+' de '+MESES.length;
-
-  // Desglose marketing / propio. Si la hoja todavía no lo trae, no se dibuja nada.
-  const mk=DATA.mkt&&DATA.mkt[ACTUAL]?DATA.mkt[ACTUAL][HOY-1]:null;
-  const pr=DATA.propio&&DATA.propio[ACTUAL]?DATA.propio[ACTUAL][HOY-1]:null;
-  const elSplit=document.getElementById('split');
-  if(mk===null||pr===null||(mk+pr)===0){ elSplit.innerHTML=''; }
-  else{
-    const t=mk+pr, pm=mk/t*100;
-    elSplit.innerHTML=
-      '<div class="split-bar">'
-      +'<span style="width:'+pm.toFixed(1)+'%;background:var(--now)"></span>'
-      +'<span style="width:'+(100-pm).toFixed(1)+'%;background:var(--now);opacity:.36"></span></div>'
-      +'<div class="split-k">'
-      +'<span><i style="background:var(--now)"></i>Marketing <b>'+compact(mk)+'</b> · '+pm.toFixed(0)+' %</span>'
-      +'<span><i style="background:var(--now);opacity:.36"></i>'+PROPIO+' <b>'+compact(pr)+'</b> · '+(100-pm).toFixed(0)+' %</span>'
-      +'</div>';
+    if(R.info.faltantes?.length)notes.push('La hoja agrupa días: '+R.info.faltantes.join(', ')+'. Esos días no se comparan individualmente; el total del grupo se conserva en su último día.');
+    $('notes').innerHTML=notes.map((n,i)=>'<div class="note"><span class="k">0'+(i+1)+'</span><span>'+n+'</span></div>').join('');
+    $('foot').textContent='Fuente: hoja de ventas · Meta mensual '+money(P.meta)+' · Datos publicados: '+(P.actualizado||'Sin fecha')+' (Colombia). El botón actualizar consulta la última publicación del panel.';
+    draw(R);
   }
-
-  const arrow=d=>'<span class="arrow">'+(d>=0?'▲':'▼')+'</span>'+
-    Math.abs(d).toFixed(1).replace('.',',')+'<span style="font-size:16px">%</span>';
-  const tile=(h1,h2,d,foot)=>'<div class="tile"><div class="tile-h"><span>'+h1+'</span><span>'+h2
-    +'</span></div><div class="delta '+(d>=0?'up':'down')+'">'+arrow(d)+'</div>'
-    +'<div class="tile-f">'+foot+'</div></div>';
-  document.getElementById('tiles').innerHTML=
-    tile('vs. '+ANT.toLowerCase(),'mes pasado',dAnt,ANT+' al día '+HOY+': <b>'+money(alDia[ANT])+'</b>')+
-    tile('vs. '+mejor.toLowerCase(),'mejor arranque',dMej,mejor+' al día '+HOY+': <b>'+money(alDia[mejor])+'</b>')+
-    tile('vs. promedio',prev.length+' meses',dPro,'Promedio al día '+HOY+': <b>'+money(prom)+'</b>');
-
-  /* comentarios: calculados, no escritos a mano */
-  const mejorCierre=prev.reduce((a,b)=>cierre(a)>cierre(b)?a:b);
-  const puestoArr=prev.slice().sort((a,b)=>alDia[b]-alDia[a]).indexOf(mejorCierre)+1;
-  const fr=m=>cierre(m)?alDia[m]/cierre(m)*100:0;
-  const fracs=prev.map(fr).filter(x=>x>0);
-  const fracProm=fracs.reduce((a,b)=>a+b,0)/fracs.length;
-  // fracProm viene en PORCENTAJE (ej. 37.3), así que hay que dividir por fracProm/100.
-  const proyeccion = mio/(fracProm/100);
-  const proyPctMeta = proyeccion/META*100;
-  const ag=DATA.agend&&DATA.agend[ACTUAL]?DATA.agend[ACTUAL][HOY-1]:null;
-  const agAnt=DATA.agend&&DATA.agend[ANT]?DATA.agend[ANT][HOY-1]:null;
-
-  const notas=[
-    ['01','El arranque no define el mes. <b>'+mejorCierre+'</b> iba '+ORD[puestoArr-1]
-      +' de '+prev.length+' al día '+HOY+' y cerró como el mejor mes del año ('+compact(cierre(mejorCierre))
-      +', '+(cierre(mejorCierre)/META*100).toFixed(0)+' % de la meta). Al día '+HOY
-      +' llevaba el <b>'+fr(mejorCierre).toFixed(0)+' %</b> de lo que terminó vendiendo.'],
-    ['02','Al día '+HOY+' los meses cerrados llevaban entre <b>'+Math.min.apply(null,fracs).toFixed(0)
-      +' %</b> y <b>'+Math.max.apply(null,fracs).toFixed(0)+' %</b> de su cierre. Manteniendo la forma '
-      +'histórica, '+ACTUAL.toLowerCase()+' cerraría cerca de <b>'+compact(proyeccion)+'</b>, '
-      +'el <b>'+proyPctMeta.toFixed(0)+' %</b> de la meta de '+compact(META)+'.']
-  ];
-  if(ag!==null&&agAnt!==null) notas.push(['03','Agendas al día '+HOY+': <b>'+ag+'</b> contra <b>'+agAnt
-    +'</b> de '+ANT.toLowerCase()+'. Es el indicador que se mueve antes que la venta.']);
-
-  document.getElementById('notes').innerHTML=notas.map(n=>
-    '<div class="note"><span class="k">'+n[0]+'</span><span>'+n[1]+'</span></div>').join('');
-  document.getElementById('foot').innerHTML='Fuente: Overview 2026 Clínica Dr. Daniel Rivera · '
-    +'Meta mensual '+compact(META)+' · Datos al '+P.actualizado;
-}
-
-document.querySelectorAll('.seg button').forEach(b=>{
-  b.addEventListener('click',()=>{
-    document.querySelectorAll('.seg button').forEach(x=>x.setAttribute('aria-pressed','false'));
-    b.setAttribute('aria-pressed','true');
-    draw(b.dataset.m);
+  function draw(R){
+    const svg=$('chart'), ns='http://www.w3.org/2000/svg', cs=getComputedStyle(document.documentElement), color=k=>cs.getPropertyValue(k).trim();
+    const add=(name,attrs,text)=>{const e=document.createElementNS(ns,name);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!==undefined)e.textContent=text;svg.appendChild(e);return e;};
+    const fmt=metric==='ventas'?compact:v=>nf.format(Math.round(v));
+    const months=($('historial').checked?R.candidatos:[R.anterior,selected]).filter(m=>m && P[metric]?.[m]);
+    const series=m=>P[metric][m].slice(0,R.completo?R.periodo(m).dias:Math.min(R.corte,R.periodo(m).dias));
+    const values=months.flatMap(series).filter(v=>typeof v==='number');
+    const ymax=Math.max(1,...values)*1.1, days=Math.max(2,...months.map(m=>series(m).length)), W=900,H=350,L=80,T=28,IW=740,IH=270;
+    const x=d=>L+(d-1)/(days-1)*IW,y=v=>T+IH-v/ymax*IH;
+    svg.setAttribute('viewBox','0 0 '+W+' '+H);svg.textContent='';
+    add('title',{id:'chartTitle'},'Evolución de '+metric+' · '+selected);
+    for(let i=0;i<=4;i++){const val=ymax*i/4;add('line',{x1:L,x2:L+IW,y1:y(val),y2:y(val),stroke:color('--line')});add('text',{x:L-10,y:y(val)+4,'text-anchor':'end',fill:color('--ink-2'),'font-size':11},fmt(val));}
+    [...new Set([1,5,10,15,20,25,days].filter(d=>d<=days))].forEach(d=>add('text',{x:x(d),y:T+IH+25,'text-anchor':'middle',fill:color('--ink-2'),'font-size':11},d));
+    const colours=m=>m===selected?color('--now'):m===R.anterior?color('--record'):color('--faint');
+    months.sort((a,b)=>Number(a===selected)-Number(b===selected)).forEach(m=>{
+      let path='',connected=false;
+      series(m).forEach((v,i)=>{if(v===null){connected=false;return;}path+=(connected?'L':'M')+x(i+1)+' '+y(v)+' ';connected=true;});
+      add('path',{d:path,fill:'none',stroke:colours(m),'stroke-width':m===selected?3:2,'stroke-linejoin':'round'});
+      const s=series(m), last=s.at(-1);if(last!==null)add('circle',{cx:x(s.length),cy:y(last),r:4,fill:colours(m)});
+    });
+    $('legend').innerHTML=months.map(m=>'<span class="lg"><span class="sw" style="background:'+colours(m)+'"></span>'+m+(m===selected?' · seleccionado':'')+'</span>').join('');
+    $('chartDesc').textContent=R.completo?'Acumulado hasta el último día de cada mes.':'Acumulado hasta el día '+R.corte+'. Cambia la métrica o muestra el historial.';
+    const cross=add('line',{x1:0,x2:0,y1:T,y2:T+IH,stroke:color('--ink-3'),opacity:0});
+    const hit=add('rect',{x:L,y:T,width:IW,height:IH,fill:'transparent'}),tip=$('tip');
+    hit.addEventListener('pointermove',event=>{
+      const rect=svg.getBoundingClientRect(),d=Math.max(1,Math.min(days,Math.round(((event.clientX-rect.left)/rect.width*W-L)/IW*(days-1))+1));
+      cross.setAttribute('x1',x(d));cross.setAttribute('x2',x(d));cross.setAttribute('opacity','.5');
+      tip.innerHTML='<div class="th">Día '+d+'</div>'+months.map(m=>{const val=series(m)[d-1];return '<div class="tr"><span>'+m+'</span><b>'+(val===null || val===undefined?'Sin dato':fmt(val))+'</b></div>';}).join('');
+      tip.style.left=Math.min(Math.max(event.clientX-rect.left+12,8),Math.max(8,rect.width-240))+'px';tip.style.top='30px';tip.style.opacity=1;
+    });
+    hit.addEventListener('pointerleave',()=>{tip.style.opacity=0;cross.setAttribute('opacity',0);});
+  }
+  options();resetPeriod();render();
+  $('periodo').addEventListener('change',()=>{selected=$('periodo').value;resetPeriod();render();});
+  $('modo').addEventListener('change',()=>{mode=$('modo').value;render();});
+  $('dia').addEventListener('change',()=>{day=Number($('dia').value);render();});
+  $('historial').addEventListener('change',render);
+  document.querySelectorAll('[data-m]').forEach(b=>b.addEventListener('click',()=>{metric=b.dataset.m;document.querySelectorAll('[data-m]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));render();}));
+  $('capture').addEventListener('click',()=>{const active=document.body.classList.toggle('capture');$('capture').textContent=active?'Salir de vista captura':'Vista para captura';$('capture').setAttribute('aria-pressed',String(active));});
+  $('refresh').addEventListener('click',()=>{
+    const b=$('refresh');b.disabled=true;$('status').textContent='Consultando la última publicación…';
+    const s=document.createElement('script');s.src='data.js?t='+Date.now();
+    const finish=()=>{b.disabled=false;s.remove();};
+    s.onload=()=>{const before=P.actualizado;P=window.RIVERA;options();render();$('status').textContent=P.actualizado===before?'Consultado ahora: no hay una publicación más reciente.':'Datos publicados actualizados.';finish();};
+    s.onerror=()=>{$('status').textContent='No se pudo actualizar. Se conservan los datos visibles.';finish();};document.head.appendChild(s);
   });
-});
-draw('ventas'); bars(); hydrate();
 })();
+
 </script>
 </body>
 </html>
+
