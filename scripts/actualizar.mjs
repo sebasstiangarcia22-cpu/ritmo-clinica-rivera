@@ -11,23 +11,38 @@ if (!ENDPOINT) {
 }
 
 const url = ENDPOINT + (ENDPOINT.includes('?') ? '&' : '?') + 'format=json';
-console.log('Leyendo', url.replace(/\/[^/]*exec/, '/***/exec'));
+console.log('Consultando los datos de Google Apps Script.');
 
-// Apps Script responde con un 302 hacia googleusercontent; fetch lo sigue solo.
-const res = await fetch(url, { redirect: 'follow' });
-if (!res.ok) {
-  console.error('El endpoint respondió ' + res.status + ' ' + res.statusText);
-  process.exit(1);
+async function leerPayload() {
+  const esperas = [5000, 15000];
+  for (let intento = 0; intento < 3; intento++) {
+    try {
+      // El límite incluye las redirecciones y la lectura del cuerpo.
+      const res = await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(60000) });
+      if (!res.ok) {
+        const error = new Error('Google respondió HTTP ' + res.status);
+        error.reintentable = [404, 408, 429].includes(res.status) || res.status >= 500;
+        throw error;
+      }
+      const texto = await res.text();
+      try {
+        return JSON.parse(texto);
+      } catch {
+        throw new Error('Google no devolvió JSON. Revisar la implementación y sus permisos si el error persiste.');
+      }
+    } catch (error) {
+      if (error.reintentable === false || intento === 2) throw error;
+      console.warn('Consulta fallida (intento ' + (intento + 1) + '/3). Se reintentará en ' + esperas[intento] / 1000 + ' s.');
+      await new Promise(resolve => setTimeout(resolve, esperas[intento]));
+    }
+  }
 }
 
-const texto = await res.text();
 let p;
 try {
-  p = JSON.parse(texto);
-} catch (e) {
-  // Si el web app perdió permisos, Google devuelve una página de login en HTML.
-  console.error('La respuesta no es JSON. ¿El deploy quedó como "Cualquier usuario con el vínculo"?');
-  console.error(texto.slice(0, 300));
+  p = await leerPayload();
+} catch (error) {
+  console.error('No se actualizaron los datos: ' + error.message);
   process.exit(1);
 }
 
